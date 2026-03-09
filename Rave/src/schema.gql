@@ -1,0 +1,386 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Alumno {
+  estado_academico: String!
+  grupo_id: Int!
+  id: Int!
+  matricula: String!
+  nombre_completo: String!
+}
+
+type Carrera {
+  clave: String!
+  id: Int!
+  nombre: String!
+}
+
+input CreateAlumnoInput {
+  estado_academico: String!
+  grupo_id: Int!
+  matricula: String!
+  nombre_completo: String!
+}
+
+input CreateCarreraInput {
+  clave: String!
+  nombre: String!
+}
+
+input CreateCredencialeInput {
+  alumno_id: Int
+  empleado_id: Int
+  estado: String! = "ACTIVA"
+  qr_hash: String!
+  vencimiento: DateTime!
+}
+
+input CreateDepartamentoInput {
+  nombre_depto: String!
+}
+
+input CreateEmpleadoInput {
+  depto_id: Int!
+  nombre_completo: String!
+  num_empleado: String!
+}
+
+input CreateGrupoInput {
+  carrera_id: Int!
+  nombre: String!
+  semestre: Int!
+}
+
+input CreateHorarioInput {
+  dia_semana: String!
+  grupo_id: Int!
+  hora_entrada: DateTime!
+  hora_salida: DateTime!
+}
+
+input CreatePaseVisitaInput {
+  autoriza_id: Int!
+  expiracion: DateTime!
+  qr_hash: String!
+  visitante_id: Int!
+}
+
+input CreatePuntosAccesoInput {
+  tipo: String!
+  ubicacion: String!
+}
+
+input CreateRegistrosAccesoInput {
+  concedido: Boolean!
+  credencial_id: Int
+  fecha_hora: DateTime!
+  motivo_rechazo: String
+  pase_id: Int
+  punto_id: Int!
+  usuario_id: Int!
+}
+
+input CreateRoleInput {
+  nombre_rol: String!
+}
+
+input CreateSancionInput {
+  alumno_id: Int!
+  bloquea_acceso: Boolean!
+  motivo: String!
+}
+
+input CreateUsuarioSistemaInput {
+  alumno_id: Int
+  password: String!
+  rol_id: Int!
+  username: String!
+}
+
+input CreateVisitanteInput {
+  identificacion: String!
+  motivo: String!
+  nombre_completo: String!
+}
+
+type Credenciale {
+  alumno_id: Int
+  alumnos: Alumno
+  estado: String!
+  id: Int!
+  qr_hash: String!
+  vencimiento: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Departamento {
+  id: Int!
+  nombre_depto: String!
+}
+
+type Empleado {
+  departamentos: Departamento
+  depto_id: Int!
+  id: Int!
+  nombre_completo: String!
+  num_empleado: String!
+}
+
+type Grupo {
+  carrera_id: Int!
+  carreras: Carrera
+  id: Int!
+  nombre: String!
+  semestre: Int!
+}
+
+type Horario {
+  dia_semana: String!
+  grupo_id: Int!
+  hora_entrada: DateTime!
+  hora_salida: DateTime!
+  id: Int!
+}
+
+type LoginResponse {
+  rol: String!
+  token: String!
+}
+
+type Mutation {
+  createAlumno(createAlumnoInput: CreateAlumnoInput!): Alumno!
+  createCarrera(createCarreraInput: CreateCarreraInput!): Carrera!
+  createCredenciale(createCredencialeInput: CreateCredencialeInput!): Credenciale!
+  createDepartamento(createDepartamentoInput: CreateDepartamentoInput!): Departamento!
+  createEmpleado(createEmpleadoInput: CreateEmpleadoInput!): Empleado!
+  createGrupo(createGrupoInput: CreateGrupoInput!): Grupo!
+  createHorario(createHorarioInput: CreateHorarioInput!): Horario!
+  createPaseVisita(createPasesVisitaInput: CreatePaseVisitaInput!): PaseVisita!
+  createPuntoAcceso(createPuntosAccesoInput: CreatePuntosAccesoInput!): PuntoAcceso!
+  createRegistroAcceso(createRegistrosAccesoInput: CreateRegistrosAccesoInput!): RegistroAcceso!
+  createRole(createRoleInput: CreateRoleInput!): Role!
+  createSancion(createSancionInput: CreateSancionInput!): Sancion!
+  createUsuariosSistema(createUsuariosSistemaInput: CreateUsuarioSistemaInput!): UsuarioSistema!
+  createVisitante(createVisitanteInput: CreateVisitanteInput!): Visitante!
+  loginUsuario(password: String!, username: String!): LoginResponse!
+  removeAlumno(id: Int!): Alumno!
+  removeCarrera(id: Int!): Carrera!
+  removeCredenciale(id: Int!): Credenciale!
+  removeDepartamento(id: Int!): Departamento!
+  removeEmpleado(id: Int!): Empleado!
+  removeGrupo(id_grupo: Int!): Grupo!
+  removeHorario(id: Int!): Horario!
+  removePaseVisita(id: Int!): PaseVisita!
+  removePuntoAcceso(id: Int!): PuntoAcceso!
+  removeRegistroAcceso(id: Int!): RegistroAcceso!
+  removeRole(id: Int!): Role!
+  removeSancion(id: Int!): Sancion!
+  removeUsuariosSistema(id: Int!): UsuarioSistema!
+  removeVisitante(id: Int!): Visitante!
+  updateAlumno(updateAlumnoInput: UpdateAlumnoInput!): Alumno!
+  updateCarrera(updateCarreraInput: UpdateCarreraInput!): Carrera!
+  updateCredenciale(updateCredencialeInput: UpdateCredencialeInput!): Credenciale!
+  updateDepartamento(updateDepartamentoInput: UpdateDepartamentoInput!): Departamento!
+  updateEmpleado(updateEmpleadoInput: UpdateEmpleadoInput!): Empleado!
+  updateGrupo(updateGrupoInput: UpdateGrupoInput!): Grupo!
+  updateHorario(updateHorarioInput: UpdateHorarioInput!): Horario!
+  updatePaseVisita(updatePasesVisitaInput: UpdatePasesVisitaInput!): PaseVisita!
+  updatePuntoAcceso(updatePuntosAccesoInput: UpdatePuntosAccesoInput!): PuntoAcceso!
+  updateRegistroAcceso(updateRegistrosAccesoInput: UpdateRegistrosAccesoInput!): RegistroAcceso!
+  updateRole(updateRoleInput: UpdateRoleInput!): Role!
+  updateSancion(updateSancionInput: UpdateSancionInput!): Sancion!
+  updateUsuariosSistema(updateUsuariosSistemaInput: UpdateUsuariosSistemaInput!): UsuarioSistema!
+  updateVisitante(updateVisitanteInput: UpdateVisitanteInput!): Visitante!
+}
+
+type PaseVisita {
+  autoriza_id: Int!
+  expiracion: DateTime!
+  id: Int!
+  qr_hash: String!
+  visitante_id: Int!
+  visitantes: Visitante
+}
+
+type PuntoAcceso {
+  id: Int!
+  tipo: String!
+  ubicacion: String!
+}
+
+type Query {
+  alumno(matricula: String!): Alumno
+  alumnos: [Alumno!]!
+  carrera(id: Int!): Carrera
+  carreras: [Carrera!]!
+  credencial(id: Int!): Credenciale
+  credenciales: [Credenciale!]!
+  departamento(id: Int!): Departamento
+  departamentos: [Departamento!]!
+  empleado(id: Int!): Empleado
+  empleadoPorNum(num_empleado: String!): Empleado
+  empleados: [Empleado!]!
+  grupo(id_grupo: Int!): Grupo
+  grupos: [Grupo!]!
+  horario(id: Int!): Horario
+  horarios: [Horario!]!
+  paseVisita(id: Int!): PaseVisita
+  pasesVisita: [PaseVisita!]!
+  puntoAcceso(id: Int!): PuntoAcceso
+  puntosAcceso: [PuntoAcceso!]!
+  registroAcceso(id: Int!): RegistroAcceso
+  registrosAcceso: [RegistroAcceso!]!
+  role(id: Int!): Role
+  roles: [Role!]!
+  sancion(id: Int!): Sancion
+  sanciones: [Sancion!]!
+  sancionesActivasAlumno(alumno_id: Int!): [Sancion!]!
+  usuario(id: Int!): UsuarioSistema
+  usuarios: [UsuarioSistema!]!
+  validarPaseQR(qr_hash: String!): PaseVisita
+  validarQR(qr_hash: String!): Credenciale
+  visitante(id: Int!): Visitante
+  visitantes: [Visitante!]!
+}
+
+type RegistroAcceso {
+  concedido: Boolean!
+  fecha_hora: DateTime!
+  id: Int!
+  motivo_rechazo: String
+  punto_id: Int!
+  usuario_id: Int!
+}
+
+type Role {
+  id: Int!
+  nombre_rol: String!
+}
+
+type Sancion {
+  alumno_id: Int!
+  bloquea_acceso: Boolean!
+  id: Int!
+  motivo: String!
+}
+
+input UpdateAlumnoInput {
+  estado_academico: String
+  grupo_id: Int
+  id: Int!
+  matricula: String
+  nombre_completo: String
+}
+
+input UpdateCarreraInput {
+  clave: String
+  id: Int!
+  nombre: String
+}
+
+input UpdateCredencialeInput {
+  alumno_id: Int
+  empleado_id: Int
+  estado: String = "ACTIVA"
+  id: Int!
+  qr_hash: String
+  vencimiento: DateTime
+}
+
+input UpdateDepartamentoInput {
+  id: Int!
+  nombre_depto: String
+}
+
+input UpdateEmpleadoInput {
+  depto_id: Int
+  id: Int!
+  nombre_completo: String
+  num_empleado: String
+}
+
+input UpdateGrupoInput {
+  carrera_id: Int
+  id_grupo: Int!
+  nombre: String
+  semestre: Int
+}
+
+input UpdateHorarioInput {
+  dia_semana: String
+  grupo_id: Int
+  hora_entrada: DateTime
+  hora_salida: DateTime
+  id: Int!
+}
+
+input UpdatePasesVisitaInput {
+  autoriza_id: Int
+  expiracion: DateTime
+  id: Int!
+  qr_hash: String
+  visitante_id: Int
+}
+
+input UpdatePuntosAccesoInput {
+  id: Int!
+  tipo: String
+  ubicacion: String
+}
+
+input UpdateRegistrosAccesoInput {
+  concedido: Boolean
+  credencial_id: Int
+  fecha_hora: DateTime
+  id: Int!
+  motivo_rechazo: String
+  pase_id: Int
+  punto_id: Int
+  usuario_id: Int
+}
+
+input UpdateRoleInput {
+  id: Int!
+  nombre_rol: String
+}
+
+input UpdateSancionInput {
+  alumno_id: Int
+  bloquea_acceso: Boolean
+  id: Int!
+  motivo: String
+}
+
+input UpdateUsuariosSistemaInput {
+  alumno_id: Int
+  id_usuario: Int!
+  password: String
+  rol_id: Int
+  username: String
+}
+
+input UpdateVisitanteInput {
+  id: Int!
+  identificacion: String
+  motivo: String
+  nombre_completo: String
+}
+
+type UsuarioSistema {
+  id: Int!
+  rol_id: Int!
+  roles: Role
+  username: String!
+}
+
+type Visitante {
+  id: Int!
+  identificacion: String!
+  motivo: String!
+  nombre_completo: String!
+}

@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Matcha / Japanese Modern palette */
+    --background: 40 33% 96%;        /* warm cream */
+    --foreground: 30 10% 15%;         /* deep charcoal-brown */
+
+    --card: 40 25% 98%;               /* soft ivory */
+    --card-foreground: 30 10% 15%;
+
+    --popover: 40 25% 98%;
+    --popover-foreground: 30 10% 15%;
+
+    --primary: 140 25% 45%;           /* matcha green */
+    --primary-foreground: 40 33% 97%;
+
+    --secondary: 35 20% 90%;          /* light wood/sand */
+    --secondary-foreground: 30 10% 25%;
+
+    --muted: 40 15% 92%;              /* muted cream */
+    --muted-foreground: 30 8% 50%;
+
+    --accent: 140 20% 88%;            /* pale matcha tint */
+    --accent-foreground: 140 30% 30%;
+
+    --destructive: 15 50% 55%;        /* terracotta soft */
+    --destructive-foreground: 40 33% 97%;
+
+    --border: 35 15% 85%;
+    --input: 35 15% 88%;
+    --ring: 140 25% 45%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --matcha: 140 25% 45%;
+    --matcha-light: 140 30% 92%;
+    --matcha-vivid: 145 40% 50%;
+    --cream: 40 33% 96%;
+    --cream-dark: 35 20% 90%;
+    --wood: 30 15% 70%;
+    --wood-light: 35 20% 88%;
+    --charcoal: 30 10% 15%;
+    --terracotta: 15 50% 55%;
+    --terracotta-light: 15 40% 92%;
+
+    /* Pattern & glass */
+    --glass-bg: 40 25% 98% / 0.7;
+    --glass-border: 35 15% 85% / 0.5;
+    --shadow-soft: 0 8px 32px hsl(30 10% 15% / 0.06);
+    --shadow-card: 0 4px 24px hsl(30 10% 15% / 0.04);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 30 10% 8%;
+    --foreground: 40 20% 90%;
+    --card: 30 10% 12%;
+    --card-foreground: 40 20% 90%;
+    --popover: 30 10% 12%;
+    --popover-foreground: 40 20% 90%;
+    --primary: 140 30% 50%;
+    --primary-foreground: 30 10% 8%;
+    --secondary: 30 10% 18%;
+    --secondary-foreground: 40 20% 90%;
+    --muted: 30 10% 18%;
+    --muted-foreground: 40 10% 60%;
+    --accent: 140 15% 20%;
+    --accent-foreground: 140 30% 80%;
+    --destructive: 15 45% 45%;
+    --destructive-foreground: 40 20% 90%;
+    --border: 30 10% 20%;
+    --input: 30 10% 20%;
+    --ring: 140 30% 50%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .font-jp {
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  /* Asanoha pattern */
+  .asanoha-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23a8b5a0' stroke-width='0.4' opacity='0.25'%3E%3Cpath d='M40 0L20 20L0 0'/%3E%3Cpath d='M80 0L60 20L40 0'/%3E%3Cpath d='M40 40L20 20L0 40'/%3E%3Cpath d='M80 40L60 20L40 40'/%3E%3Cpath d='M40 40L20 60L0 40'/%3E%3Cpath d='M80 40L60 60L40 40'/%3E%3Cpath d='M40 80L20 60L0 80'/%3E%3Cpath d='M80 80L60 60L40 80'/%3E%3Cpath d='M20 20L40 40'/%3E%3Cpath d='M60 20L40 40'/%3E%3Cpath d='M20 60L40 40'/%3E%3Cpath d='M60 60L40 40'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.4s ease-out forwards;
+  }
+}

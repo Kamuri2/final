@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model alumnos {
+  id               Int               @id @default(autoincrement())
+  matricula        String            @unique @db.VarChar(50)
+  nombre_completo  String            @db.VarChar(150)
+  grupo_id         Int
+  estado_academico String            @db.VarChar(50)
+  grupos           grupos            @relation(fields: [grupo_id], references: [id], onUpdate: NoAction)
+  credenciales     credenciales[]
+  sanciones        sanciones[]
+  usuarios_sistema usuarios_sistema?
+}
+
+model carreras {
+  id     Int      @id @default(autoincrement())
+  nombre String   @db.VarChar(150)
+  clave  String   @unique @db.VarChar(20)
+  grupos grupos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model credenciales {
+  id               Int                @id @default(autoincrement())
+  qr_hash          String             @unique @db.VarChar(255)
+  vencimiento      DateTime           @db.Date
+  estado           String             @default("ACTIVA") @db.VarChar(50)
+  alumno_id        Int?
+  empleado_id      Int?
+  alumnos          alumnos?           @relation(fields: [alumno_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  empleados        empleados?         @relation(fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  registros_acceso registros_acceso[]
+}
+
+model departamentos {
+  id           Int         @id @default(autoincrement())
+  nombre_depto String      @db.VarChar(100)
+  empleados    empleados[]
+}
+
+model empleados {
+  id               Int               @id @default(autoincrement())
+  num_empleado     String            @unique @db.VarChar(50)
+  nombre_completo  String            @db.VarChar(150)
+  depto_id         Int
+  credenciales     credenciales[]
+  departamentos    departamentos     @relation(fields: [depto_id], references: [id], onUpdate: NoAction)
+  usuarios_sistema usuarios_sistema?
+}
+
+model grupos {
+  id         Int        @id @default(autoincrement())
+  nombre     String     @db.VarChar(50)
+  semestre   Int
+  carrera_id Int
+  alumnos    alumnos[]
+  carreras   carreras   @relation(fields: [carrera_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  horarios   horarios[]
+}
+
+model horarios {
+  id           Int      @id @default(autoincrement())
+  dia_semana   String   @db.VarChar(15)
+  hora_entrada DateTime @db.Time(6)
+  hora_salida  DateTime @db.Time(6)
+  grupo_id     Int
+  grupos       grupos   @relation(fields: [grupo_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model pases_visita {
+  id               Int                @id @default(autoincrement())
+  qr_hash          String             @unique @db.VarChar(255)
+  expiracion       DateTime           @db.Timestamp(6)
+  visitante_id     Int
+  autoriza_id      Int
+  usuarios_sistema usuarios_sistema   @relation(fields: [autoriza_id], references: [id], onUpdate: NoAction)
+  visitantes       visitantes         @relation(fields: [visitante_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  registros_acceso registros_acceso[]
+}
+
+model puntos_acceso {
+  id               Int                @id @default(autoincrement())
+  ubicacion        String             @db.VarChar(150)
+  tipo             String             @db.VarChar(50)
+  registros_acceso registros_acceso[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model registros_acceso {
+  id               Int              @id @default(autoincrement())
+  fecha_hora       DateTime         @default(now()) @db.Timestamp(6)
+  concedido        Boolean
+  motivo_rechazo   String?          @db.VarChar(255)
+  punto_id         Int
+  usuario_id       Int
+  credencial_id    Int?
+  pase_id          Int?
+  credenciales     credenciales?    @relation(fields: [credencial_id], references: [id], onUpdate: NoAction)
+  pases_visita     pases_visita?    @relation(fields: [pase_id], references: [id], onUpdate: NoAction)
+  puntos_acceso    puntos_acceso    @relation(fields: [punto_id], references: [id], onUpdate: NoAction)
+  usuarios_sistema usuarios_sistema @relation(fields: [usuario_id], references: [id], onUpdate: NoAction)
+}
+
+model roles {
+  id               Int                @id @default(autoincrement())
+  nombre_rol       String             @unique @db.VarChar(50)
+  usuarios_sistema usuarios_sistema[]
+}
+
+model sanciones {
+  id             Int     @id @default(autoincrement())
+  motivo         String  @db.VarChar(255)
+  bloquea_acceso Boolean @default(false)
+  alumno_id      Int
+  alumnos        alumnos @relation(fields: [alumno_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model usuarios_sistema {
+  id               Int                @id @default(autoincrement())
+  username         String             @unique @db.VarChar(50)
+  password         String             @db.VarChar(255)
+  rol_id           Int
+  alumno_id        Int?               @unique
+  empleado_id      Int?               @unique
+  visitante_id     Int?               @unique
+  pases_visita     pases_visita[]
+  registros_acceso registros_acceso[]
+  alumnos          alumnos?           @relation(fields: [alumno_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  empleados        empleados?         @relation(fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  roles            roles              @relation(fields: [rol_id], references: [id], onUpdate: NoAction)
+  visitantes       visitantes?        @relation(fields: [visitante_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model visitantes {
+  id               Int               @id @default(autoincrement())
+  nombre_completo  String            @db.VarChar(150)
+  identificacion   String            @db.VarChar(100)
+  motivo           String            @db.VarChar(255)
+  pases_visita     pases_visita[]
+  usuarios_sistema usuarios_sistema?
+}
