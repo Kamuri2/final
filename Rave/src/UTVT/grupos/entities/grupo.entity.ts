@@ -7,7 +7,7 @@ export class Grupo {
   id: number;
 
   @Field()
-  nombre: string; // Ejemplo: 'GDS0542'
+  nombre: string; 
 
   @Field(() => Int)
   semestre: number;
@@ -16,5 +16,5 @@ export class Grupo {
   carrera_id: number;
 
   @Field(() => Carrera, { nullable: true })
-  carreras?: Carrera; // Relación para ver a qué carrera pertenece
+  carreras?: Carrera; // Relación con Carrera para obtener el nombre de la carrera al consultar un grupo
 }

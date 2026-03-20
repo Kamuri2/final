@@ -32,7 +32,7 @@ async findOne(id: number) {
     return this.prisma.grupos.findMany({
       include: { 
         carreras: true,
-        _count: { select: { alumnos: true } } // ¡Tip!: Esto te dirá cuántos alumnos hay por grupo
+        _count: { select: { alumnos: true } } // dirá cuántos alumnos hay por grupo
       },
       orderBy: { nombre: 'asc' }
     });

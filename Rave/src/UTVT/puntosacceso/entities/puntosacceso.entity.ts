@@ -6,8 +6,8 @@ export class PuntoAcceso {
   id: number;
 
   @Field()
-  ubicacion: string; // Ejemplo: 'Entrada Principal', 'Biblioteca'
+  ubicacion: string;
 
   @Field()
-  tipo: string; // Ejemplo: 'Peatonal', 'Vehicular'
+  tipo: string; 
 }

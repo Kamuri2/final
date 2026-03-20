@@ -6,10 +6,10 @@ export class Horario {
   id: number;
 
   @Field()
-  dia_semana: string; // Ejemplo: 'Lunes', 'Martes'
+  dia_semana: string; 
 
   @Field()
-  hora_entrada: Date; // ⏱️ @db.Time(6) en tu Postgres
+  hora_entrada: Date; 
 
   @Field()
   hora_salida: Date;

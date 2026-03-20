@@ -10,7 +10,7 @@ export class RegistrosAccesoResolver {
 
   @Mutation(() => RegistroAcceso)
   createRegistroAcceso(@Args('createRegistrosAccesoInput') data: CreateRegistrosAccesoInput) {
-    // Aquí usamos la función que creamos en tu servicio
+    // Aquí usamos la función que creamos en  el servicio
     return this.registrosAccesoService.registrarIntento(data); 
   }
 
@@ -21,19 +21,19 @@ export class RegistrosAccesoResolver {
 
   @Query(() => RegistroAcceso, { name: 'registroAcceso', nullable: true })
   findOne(@Args('id', { type: () => Int }) id: number) {
-    // Asegúrate de tener findOne en tu servicio de registros_acceso
+    // Asegúrate de tener findOne de registros de aceceso
     return this.registrosAccesoService.findOne(id);
   }
 
   @Mutation(() => RegistroAcceso)
   updateRegistroAcceso(@Args('updateRegistrosAccesoInput') data: UpdateRegistrosAccesoInput) {
-    // Asegúrate de tener update en tu servicio de registros_acceso
+    // update en el servicio de registros_acceso
     return this.registrosAccesoService.update(data.id, data);
   }
 
   @Mutation(() => RegistroAcceso)
   removeRegistroAcceso(@Args('id', { type: () => Int }) id: number) {
-    // Asegúrate de tener remove en tu servicio de registros_acceso
+    // tener remove en el servicio de registros_acceso
     return this.registrosAccesoService.remove(id);
   }
 }

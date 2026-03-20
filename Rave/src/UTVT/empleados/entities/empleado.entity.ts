@@ -7,7 +7,7 @@ export class Empleado {
   id: number;
 
   @Field()
-  num_empleado: string; // 🆔 Su identificador laboral único
+  num_empleado: string; //Su identificador laboral único
 
   @Field()
   nombre_completo: string;

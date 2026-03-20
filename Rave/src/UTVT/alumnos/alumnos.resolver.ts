@@ -20,14 +20,14 @@ export class AlumnosResolver {
     return await this.alumnosService.findAll();
   }
 
-  // Query CLAVE: Busca por matrícula (String) en lugar de ID numérico
-  // Es la que usará tu app móvil para validar el acceso
+  // Query CLAVE: Busca por matrícula (String)
+  // Es la que usará app móvil para validar el acceso
   @Query(() => Alumno, { name: 'alumno', nullable: true })
   async findOne(@Args('matricula', { type: () => String }) matricula: string) {
     return await this.alumnosService.findOneByMatricula(matricula);
   }
 
-  // Mutation para actualizar datos (importante para el estado académico o sanciones)
+  // Mutation para actualizar datos
   @Mutation(() => Alumno)
   async updateAlumno(@Args('updateAlumnoInput') updateAlumnoInput: UpdateAlumnoInput) {
     // Nota: Asegúrate de que en tu update-alumno.input.ts el campo se llame id_alumno

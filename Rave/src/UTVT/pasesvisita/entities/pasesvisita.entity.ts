@@ -10,7 +10,7 @@ export class PaseVisita {
   qr_hash: string;
 
   @Field()
-  expiracion: Date; // ⏱️ Muy importante para accesos temporales
+  expiracion: Date; // ⏱importante para accesos temporales
 
   @Field(() => Int)
   visitante_id: number;

@@ -9,5 +9,5 @@ export class Carrera {
   nombre: string;
 
   @Field()
-  clave: string; // Ejemplo: 'TIC-01'
+  clave: string; 
 }

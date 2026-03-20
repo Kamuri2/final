@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsuariosSistemaResolver } from './usuariosdelsistema.resolver';
-import { UsuariosSistemaService } from './usuariosdelsistema.service';
+import { UsuarioSistemaService } from './usuariosdelsistema.service';
 
 describe('UsuariosdelsistemaResolver', () => {
   let resolver: UsuariosSistemaResolver;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UsuariosSistemaResolver, UsuariosSistemaService],
+      providers: [UsuariosSistemaResolver, UsuarioSistemaService],
     }).compile();
 
     resolver = module.get<UsuariosSistemaResolver>(UsuariosSistemaResolver);

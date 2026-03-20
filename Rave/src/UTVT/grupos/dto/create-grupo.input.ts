@@ -15,5 +15,5 @@ export class CreateGrupoInput {
 
   @Field(() => Int)
   @IsNotEmpty()
-  carrera_id: number; // El ID de la carrera que creamos en el paso anterior
+  carrera_id: number; // El ID de la carrera 
 }

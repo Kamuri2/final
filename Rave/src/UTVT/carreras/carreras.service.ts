@@ -24,7 +24,7 @@ async findOne(id: number) {
       data: updateCarreraInput,
     });
   }
-  // Lista todas para que el Admin pueda seleccionarlas en un dropdown
+  // Lista todas para que el Admin pueda seleccionarla
   async findAll() {
     return this.prisma.carreras.findMany({
       orderBy: { nombre: 'asc' },

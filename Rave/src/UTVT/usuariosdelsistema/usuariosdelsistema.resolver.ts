@@ -4,7 +4,7 @@ import { UsuarioSistema } from './entities/usuariosdelsistema.entity';
 import { CreateUsuarioSistemaInput } from './dto/create-usuariosdelsistema.input';
 import { UpdateUsuariosSistemaInput } from './dto/update-usuariosdelsistema.input';
 
-// 1. Definimos la estructura de lo que recibirá React al iniciar sesión
+
 @ObjectType()
 class LoginResponse {
   @Field()
@@ -18,7 +18,7 @@ class LoginResponse {
 export class UsuariosSistemaResolver {
   constructor(private readonly usuariosService: UsuarioSistemaService) {}
 
-  // 🚀 LA MUTACIÓN CLAVE: Esta es la que busca tu frontend
+  // Mutation para login de usuario
   @Mutation(() => LoginResponse)
   async loginUsuario(
     @Args('username') username: string,

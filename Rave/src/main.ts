@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // ✅ Ajuste de CORS: Ahora permitimos tanto el puerto 8081 como el 5173
+  // Configuramos CORS para permitir solicitudes desde el frontend
   app.enableCors({
     origin: ['http://localhost:8081', 'http://localhost:5173'], 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -17,10 +17,10 @@ async function bootstrap() {
   
   await app.listen(3000);
   
-  // Estos mensajes te confirmaron que el backend ya funciona
+  // Agregamos un mensaje de consola para confirmar que el backend se ha iniciado correctamente
   console.log('\n--------------------------------------------------');
-  console.log('✅ Backend "RavenID" iniciado exitosamente');
-  console.log('📍 Endpoint GraphQL: http://localhost:3000/graphql');
+  console.log('Backend "RavenID" iniciado exitosamente');
+  console.log('Endpoint GraphQL: http://localhost:3000/graphql');
   console.log('--------------------------------------------------\n');
 }
 bootstrap();

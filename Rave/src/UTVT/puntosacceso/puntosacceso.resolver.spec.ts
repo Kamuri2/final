@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PuntosaccesoResolver } from './puntosacceso.resolver';
-import { PuntosaccesoService } from './puntosacceso.service';
+import { PuntosAccesoResolver } from './puntosacceso.resolver';
+import { PuntosAccesoService } from './puntosacceso.service';
 
-describe('PuntosaccesoResolver', () => {
-  let resolver: PuntosaccesoResolver;
+describe('PuntosAccesoResolver', () => {
+  let resolver: PuntosAccesoResolver;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PuntosaccesoResolver, PuntosaccesoService],
+      providers: [PuntosAccesoResolver, PuntosAccesoService],
     }).compile();
 
-    resolver = module.get<PuntosaccesoResolver>(PuntosaccesoResolver);
+    resolver = module.get<PuntosAccesoResolver>(PuntosAccesoResolver);
   });
 
   it('should be defined', () => {

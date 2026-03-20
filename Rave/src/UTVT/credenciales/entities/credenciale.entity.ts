@@ -7,7 +7,7 @@ export class Credenciale {
   id: number;
 
   @Field()
-  qr_hash: string; // 🗝️ El identificador único del QR
+  qr_hash: string; //identificador único del QR
 
   @Field()
   vencimiento: Date;

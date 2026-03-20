@@ -9,7 +9,7 @@ export class Sancion {
   motivo: string;
 
   @Field()
-  bloquea_acceso: boolean; // 🚫 La variable booleana que detiene el acceso
+  bloquea_acceso: boolean;
 
   @Field(() => Int)
   alumno_id: number;

@@ -4,5 +4,5 @@ import { CreateGrupoInput } from './create-grupo.input';
 @InputType()
 export class UpdateGrupoInput extends PartialType(CreateGrupoInput) {
   @Field(() => Int)
-  id_grupo: number; // Su llave primaria real
+  id_grupo: number; // Su llave 
 }

@@ -9,7 +9,7 @@ export class RegistroAcceso {
   fecha_hora: Date;
 
   @Field()
-  concedido: boolean; // ✅ / ❌
+  concedido: boolean; 
 
   @Field({ nullable: true })
   motivo_rechazo?: string;

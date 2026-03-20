@@ -25,7 +25,7 @@ export class AlumnosService {
 
   async findAll() {
     return this.prisma.alumnos.findMany({
-      include: { grupos: true } // Traemos los datos del grupo también
+      include: { grupos: true } //  datos del grupO
     });
   }
 

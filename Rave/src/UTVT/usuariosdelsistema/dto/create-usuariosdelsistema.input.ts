@@ -11,7 +11,7 @@ export class CreateUsuarioSistemaInput {
   @Field()
   @IsNotEmpty()
   @IsString()
-  password: string; // 🔐 Recuerda que RavenAdmin usa Kaoriko2
+  password: string; 
 
   @Field(() => Int)
   @IsNotEmpty()
@@ -19,5 +19,5 @@ export class CreateUsuarioSistemaInput {
 
   @Field(() => Int, { nullable: true })
   @IsOptional()
-  alumno_id?: number; // Opcional, solo si el usuario es un alumno
+  alumno_id?: number; 
 }

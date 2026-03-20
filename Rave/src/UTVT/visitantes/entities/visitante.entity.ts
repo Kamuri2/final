@@ -9,8 +9,8 @@ export class Visitante {
   nombre_completo: string;
 
   @Field()
-  identificacion: string; // Ejemplo: 'INE', 'Pasaporte'
+  identificacion: string; 
 
   @Field()
-  motivo: string; // Ejemplo: 'Mantenimiento', 'Reunión'
+  motivo: string; 
 }

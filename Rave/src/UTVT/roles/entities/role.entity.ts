@@ -6,5 +6,5 @@ export class Role {
   id: number;
 
   @Field()
-  nombre_rol: string; // Ejemplo: 'Administrador', 'Alumno', 'Prefecto'
+  nombre_rol: string; 
 }

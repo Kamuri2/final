@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PasesvisitaResolver } from './pasesvisita.resolver';
-import { PasesvisitaService } from './pasesvisita.service';
+import { PasesVisitaResolver } from './pasesvisita.resolver';
+import { PasesVisitaService } from './pasesvisita.service';
 
-describe('PasesvisitaResolver', () => {
-  let resolver: PasesvisitaResolver;
+describe('PasesVisitaResolver', () => {
+  let resolver: PasesVisitaResolver;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PasesvisitaResolver, PasesvisitaService],
+      providers: [PasesVisitaResolver, PasesVisitaService],
     }).compile();
 
-    resolver = module.get<PasesvisitaResolver>(PasesvisitaResolver);
+    resolver = module.get<PasesVisitaResolver>(PasesVisitaResolver);
   });
 
   it('should be defined', () => {
