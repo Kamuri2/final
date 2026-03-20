@@ -23,9 +23,9 @@ const alumnoSchema = z.object({
 type AlumnoFormData = z.infer<typeof alumnoSchema>;
 
 const grupos = [
-  { id: "1", nombre: "Grupo A" },
-  { id: "2", nombre: "Grupo B" },
-  { id: "3", nombre: "Grupo C" },
+  { id: "5", nombre: "DSM 52" },
+  { id: "6", nombre: "DSM 54" },
+  { id: "7", nombre: "IRD 52" },
 ];
 
 const Admin = () => {
@@ -48,12 +48,21 @@ const Admin = () => {
     },
   });
 
-  const onSubmit = (data: AlumnoFormData) => {
-    createAlumno({
-      variables: { ...data, id_grupo: parseInt(data.id_grupo, 10) },
-    });
-  };
-
+  // ✅ CÓDIGO CORREGIDO
+const onSubmit = (data: AlumnoFormData) => {
+  createAlumno({
+    variables: {
+      createAlumnoInput: {
+        matricula: data.matricula,
+        nombre_completo: data.nombre_completo,
+        // Tu formulario lo llama id_grupo, pero el backend pide grupo_id
+        grupo_id: parseInt(data.id_grupo, 10), 
+        // Tu formulario lo llama estado, pero el backend pide estado_academico
+        estado_academico: data.estado 
+      }
+    },
+  });
+};
   const handleLogout = () => {
     logout();
     navigate("/login");

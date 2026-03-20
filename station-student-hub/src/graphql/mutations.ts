@@ -2,16 +2,16 @@ import { gql } from "@apollo/client";
 
 // Mutación para iniciar sesión (Esta se queda igual, está perfecta)
 export const LOGIN_USUARIO = gql`
-  mutation loginUsuario($username: String!, $password: String!) {
-    loginUsuario(username: $username, password: $password) {
-      token
-      rol
-    }
+mutation LoginUsuario($username: String!, $password: String!) {
+  loginUsuario(username: $username, password: $password) {
+    token
+    rol
   }
+}
 `;
 
 export const CREATE_ALUMNO = gql`
-  mutation createAlumno($createAlumnoInput: CreateAlumnoInput!) {
+  mutation CreateAlumno($createAlumnoInput: CreateAlumnoInput!) {
     createAlumno(createAlumnoInput: $createAlumnoInput) {
       id
       matricula
