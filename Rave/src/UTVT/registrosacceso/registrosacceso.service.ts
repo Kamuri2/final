@@ -33,6 +33,7 @@ export class RegistrosAccesoService {
   async remove(id: number) {
     return this.prisma.registros_acceso.delete({ where: { id } });
   }
+  
   async update(id: number, updateRegistrosAccesoInput: any) {
     return this.prisma.registros_acceso.update({
       where: { id },
