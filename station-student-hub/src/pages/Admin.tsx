@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut, UserPlus } from "lucide-react";
+import { Link } from 'react-router-dom';
+
 
 const alumnoSchema = z.object({
   matricula: z.string().trim().min(1, "La matrícula es obligatoria").max(20, "Máximo 20 caracteres"),
@@ -48,21 +50,21 @@ const Admin = () => {
     },
   });
 
-  // ✅ CÓDIGO CORREGIDO
-const onSubmit = (data: AlumnoFormData) => {
-  createAlumno({
-    variables: {
-      createAlumnoInput: {
-        matricula: data.matricula,
-        nombre_completo: data.nombre_completo,
-        // Tu formulario lo llama id_grupo, pero el backend pide grupo_id
-        grupo_id: parseInt(data.id_grupo, 10), 
-        // Tu formulario lo llama estado, pero el backend pide estado_academico
-        estado_academico: data.estado 
-      }
-    },
-  });
-};
+
+  const onSubmit = (data: AlumnoFormData) => {
+    createAlumno({
+      variables: {
+        createAlumnoInput: {
+          matricula: data.matricula,
+          nombre_completo: data.nombre_completo,
+          // Tu formulario lo llama id_grupo, pero el backend pide grupo_id
+          grupo_id: parseInt(data.id_grupo, 10),
+          // Tu formulario lo llama estado, pero el backend pide estado_academico
+          estado_academico: data.estado
+        }
+      },
+    });
+  };
   const handleLogout = () => {
     logout();
     navigate("/login");

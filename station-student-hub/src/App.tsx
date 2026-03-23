@@ -1,5 +1,5 @@
 // 1. Importación desde la raíz para mayor compatibilidad con Vite
-import { ApolloProvider } from "@apollo/client/react"; 
+import { ApolloProvider } from "@apollo/client/react";
 import { client } from "@/lib/apollo";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/toaster";
@@ -22,17 +22,17 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
-            
+
             <Route
               path="/admin"
               element={
-                /* 🚀 Ajustado a "Administrador" para coincidir con tu DB */
+
                 <ProtectedRoute requiredRole="Administrador">
                   <Admin />
                 </ProtectedRoute>
               }
             />
-            
+
             <Route
               path="/alumno"
               element={
@@ -41,7 +41,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            
+
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
