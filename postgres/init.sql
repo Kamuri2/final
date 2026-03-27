@@ -1,6 +1,5 @@
 -- ==============================================================================
--- SCRIPT DE INICIALIZACIÓN PARA POSTGRESQL (DOCKER)
--- Basado en el Modelo Relacional de Control de Acceso Escolar / Institucional
+-- SCRIPT DE INICIALIZACIÓN PARA POSTGRESQL (DOCKER) - RAVEN ID ACTUALIZADO
 -- ==============================================================================
 
 -- 1. BLOQUE ACADÉMICO
@@ -29,8 +28,12 @@ CREATE TABLE alumnos (
     id SERIAL PRIMARY KEY,
     matricula VARCHAR(50) NOT NULL UNIQUE,
     nombre_completo VARCHAR(150) NOT NULL,
-    grupo_id INT NOT NULL REFERENCES grupos(id) ON DELETE RESTRICT,
-    estado_academico VARCHAR(50) NOT NULL
+    -- 🟢 Campos añadidos para el Formulario de la App
+    carrera VARCHAR(100),
+    semestre INT,
+    -- grupo_id se hace opcional (NULL) para permitir registro inicial sin grupo asignado
+    grupo_id INT REFERENCES grupos(id) ON DELETE RESTRICT,
+    estado_academico VARCHAR(50) NOT NULL DEFAULT 'ACTIVO'
 );
 
 -- 2. BLOQUE PERSONAL / VISITAS
@@ -65,12 +68,14 @@ CREATE TABLE usuarios_sistema (
     password VARCHAR(255) NOT NULL,
     rol_id INT NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
     
-    -- Relaciones 1:1 (Solo una de estas tres debe tener valor)
+    -- 🟢 INTERRUPTOR MAESTRO: Bloquea/Desbloquea el QR en la App
+    registro_completo BOOLEAN DEFAULT FALSE,
+    
+    -- Relaciones 1:1
     alumno_id INT UNIQUE REFERENCES alumnos(id) ON DELETE CASCADE,
     empleado_id INT UNIQUE REFERENCES empleados(id) ON DELETE CASCADE,
     visitante_id INT UNIQUE REFERENCES visitantes(id) ON DELETE CASCADE,
     
-    -- Restricción: Un usuario de sistema solo puede estar vinculado a UN tipo de perfil a la vez
     CONSTRAINT chk_un_solo_perfil CHECK (
         (alumno_id IS NOT NULL)::integer + 
         (empleado_id IS NOT NULL)::integer + 
@@ -85,11 +90,9 @@ CREATE TABLE credenciales (
     vencimiento DATE NOT NULL,
     estado VARCHAR(50) NOT NULL DEFAULT 'ACTIVA',
     
-    -- Foráneas opcionales (pero al menos una debe existir)
     alumno_id INT REFERENCES alumnos(id) ON DELETE CASCADE,
     empleado_id INT REFERENCES empleados(id) ON DELETE CASCADE,
     
-    -- Restricción: La credencial pertenece a un alumno O a un empleado, no a ambos
     CONSTRAINT chk_titular_credencial CHECK (
         (alumno_id IS NOT NULL)::integer + 
         (empleado_id IS NOT NULL)::integer = 1
@@ -127,18 +130,23 @@ CREATE TABLE registros_acceso (
     punto_id INT NOT NULL REFERENCES puntos_acceso(id) ON DELETE RESTRICT,
     usuario_id INT NOT NULL REFERENCES usuarios_sistema(id) ON DELETE RESTRICT,
     
-    -- Con qué método se intentó el acceso (puede ser NULL si fue un acceso manual/teclado)
     credencial_id INT REFERENCES credenciales(id) ON DELETE SET NULL,
     pase_id INT REFERENCES pases_visita(id) ON DELETE SET NULL,
     
-    -- Restricción: No se puede usar un pase y una credencial al mismo tiempo para un mismo registro
     CONSTRAINT chk_metodo_acceso CHECK (
         (credencial_id IS NOT NULL)::integer + 
         (pase_id IS NOT NULL)::integer <= 1
     )
 );
 
--- 1. Primero creamos el rol (obtendrá automáticamente el id_rol = 1)
-INSERT INTO roles (nombre_rol) VALUES ('Administrador');
+-- ==============================================================================
+-- INSERCIÓN DE DATOS INICIALES
+-- ==============================================================================
 
-INSERT INTO usuarios_sistema (username, password, rol_id) VALUES ('RavenAdmin', 'Kaoriko2', 1);
+-- Roles base
+INSERT INTO roles (nombre_rol) VALUES ('Administrador');
+INSERT INTO roles (nombre_rol) VALUES ('Alumno');
+
+-- Usuario Administrador (registro_completo en TRUE porque es el admin)
+INSERT INTO usuarios_sistema (username, password, rol_id, registro_completo) 
+VALUES ('RavenAdmin', 'Kaoriko2', 1, TRUE);
