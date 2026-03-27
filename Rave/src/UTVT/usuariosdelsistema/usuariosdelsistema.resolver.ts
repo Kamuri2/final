@@ -2,8 +2,10 @@ import { Resolver, Query, Mutation, Args, Int, ObjectType, Field } from '@nestjs
 import { UsuarioSistemaService } from './usuariosdelsistema.service';
 import { UsuarioSistema } from './entities/usuariosdelsistema.entity';
 import { CreateUsuarioSistemaInput } from './dto/create-usuariosdelsistema.input';
-import { UpdateUsuariosSistemaInput } from './dto/update-usuariosdelsistema.input';
+import { UpdateUsuariosSistemaInput } from './dto/update-usuariosdelsistema.input'; // 👈 EL IMPORT QUE FALTABA
+import { SetMetadata } from '@nestjs/common';
 
+export const Public = () => SetMetadata('isPublic', true);
 
 @ObjectType()
 class LoginResponse {
@@ -12,43 +14,50 @@ class LoginResponse {
 
   @Field()
   rol: string;
+
+  @Field(() => Int)
+  id: number;
 }
 
 @Resolver(() => UsuarioSistema)
 export class UsuariosSistemaResolver {
   constructor(private readonly usuariosService: UsuarioSistemaService) {}
 
-  // Mutation para login de usuario
+  // 1. LOGIN (Público)
+  @Public()
   @Mutation(() => LoginResponse)
-  async loginUsuario(
+  async login(
     @Args('username') username: string,
     @Args('password') password: string,
-  ) {
+  ): Promise<LoginResponse> {
     return this.usuariosService.loginUsuario(username, password);
   }
 
+  // 2. REGISTRO INICIAL (Público)
+  @Public()
   @Mutation(() => UsuarioSistema)
-  createUsuariosSistema(@Args('createUsuariosSistemaInput') createInput: CreateUsuarioSistemaInput) {
-    return this.usuariosService.create(createInput);
+  async registrarAlumno(
+    @Args('input') input: CreateUsuarioSistemaInput
+  ) {
+    return this.usuariosService.create(input);
   }
 
-  @Query(() => [UsuarioSistema], { name: 'usuarios' })
-  findAll() {
-    return this.usuariosService.findAll();
-  }
-
-  @Query(() => UsuarioSistema, { name: 'usuario', nullable: true })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.usuariosService.findOne(id);
-  }
-
+  // 3. ACTUALIZACIÓN DE FICHA / FORMULARIO (Real)
+  // Nota: Si usas seguridad JWT, quita el @Public(). 
+  // Si aún estás probando sin tokens, déjalo puesto.
+  @Public() 
   @Mutation(() => UsuarioSistema)
-  updateUsuariosSistema(@Args('updateUsuariosSistemaInput') updateInput: UpdateUsuariosSistemaInput) {
-    return this.usuariosService.update(updateInput.id_usuario, updateInput);
+  async actualizarAlumno(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('input') input: UpdateUsuariosSistemaInput,
+  ) {
+    return this.usuariosService.update(id, input);
   }
 
-  @Mutation(() => UsuarioSistema)
-  removeUsuariosSistema(@Args('id', { type: () => Int }) id: number) {
-    return this.usuariosService.remove(id);
-  }
+  // En el servidor NestJS (Machenike)
+@Query(() => UsuarioSistema, { name: 'getUsuarioStatus' }) // 👈 EL NOMBRE TIENE QUE SER ESTE
+findOne(@Args('id', { type: () => Int }) id: number) {
+  return this.usuariosService.findOne(id);
 }
+}
+

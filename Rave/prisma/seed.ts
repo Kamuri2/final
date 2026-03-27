@@ -6,9 +6,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
- 
+  console.log('--- Iniciando Siembra de RavenID en la Machenike ---');
 
-  console.log('Creando roles de sistema...');
+  // 1. ROLES
+  console.log('Creando roles...');
   const rolAdmin = await prisma.roles.upsert({
     where: { nombre_rol: 'Administrador' },
     update: {},
@@ -24,81 +25,90 @@ async function main() {
     update: {},
     create: { nombre_rol: 'Guardia' },
   });
-  console.log(' Roles creados.\n');
 
-  console.log(' Creando carreras...');
-  const carreraDSM = await prisma.carreras.upsert({
+  // 2. CARRERAS
+  console.log('Creando carreras...');
+  const dsm = await prisma.carreras.upsert({
     where: { clave: 'DSM' },
     update: {},
     create: { nombre: 'Desarrollo de Software Multiplataforma', clave: 'DSM' },
   });
-  const carreraIRD = await prisma.carreras.upsert({
+  const ird = await prisma.carreras.upsert({
     where: { clave: 'IRD' },
     update: {},
     create: { nombre: 'Infraestructura de Redes Digitales', clave: 'IRD' },
   });
-  console.log(' Carreras creadas.\n');
 
+  // 3. GRUPOS (Limpiamos y creamos para evitar duplicados de ID)
+  console.log('Configurando grupos...');
   await prisma.grupos.deleteMany(); 
-  console.log('⏳ Creando grupos...');
-  await prisma.grupos.createMany({
-    data: [
-      { nombre: 'DSM 52', semestre: 5, carrera_id: carreraDSM.id },
-      { nombre: 'DSM 54', semestre: 5, carrera_id: carreraDSM.id },
-      { nombre: 'IRD 52', semestre: 5, carrera_id: carreraIRD.id },
-    ],
+  const grupo52 = await prisma.grupos.create({
+    data: { nombre: 'DSM 52', semestre: 5, carrera_id: dsm.id },
   });
-  console.log(' Grupos creados.\n');
 
-  console.log(' Creando departamentos...');
-  const deptoSistemas = await prisma.departamentos.create({
-    data: { nombre_depto: 'Sistemas y TI' },
+  // 4. DEPARTAMENTOS
+  console.log('Creando departamentos...');
+  const deptoSistemas = await prisma.departamentos.upsert({
+    where: { id: 1 }, // Usamos ID para el upsert de depto
+    update: {},
+    create: { id: 1, nombre_depto: 'Sistemas y TI' },
   });
-  await prisma.departamentos.create({
-    data: { nombre_depto: 'Servicios Escolares' },
-  });
-  console.log(' Departamentos creados.\n');
 
-  console.log(' Creando puntos de acceso...');
+  // 5. PUNTOS DE ACCESO
+  console.log('Configurando puntos de entrada...');
+  await prisma.puntos_acceso.deleteMany();
   await prisma.puntos_acceso.createMany({
     data: [
       { ubicacion: 'Entrada Principal - Torniquete 1', tipo: 'ENTRADA' },
-      { ubicacion: 'Entrada Principal - Torniquete 2', tipo: 'SALIDA' },
-      { ubicacion: 'Laboratorio de Cómputo B', tipo: 'AMBOS' },
+      { ubicacion: 'Laboratorio Cómputo B', tipo: 'AMBOS' },
     ],
   });
-  console.log('Puntos de acceso creados.\n');
 
-  console.log(' Creando usuario administrador por defecto...');
+  // 6. USUARIO ADMINISTRADOR (CON ACCESO TOTAL)
+  console.log('Creando Administrador maestro...');
   const empleadoAdmin = await prisma.empleados.upsert({
     where: { num_empleado: 'ADMIN-001' },
     update: {},
     create: {
       num_empleado: 'ADMIN-001',
-      nombre_completo: 'Administrador RavenID',
+      nombre_completo: 'Admin RavenID',
       depto_id: deptoSistemas.id,
     },
   });
 
   await prisma.usuarios_sistema.upsert({
-    where: { username: 'admin' },
+    where: { username: 'RavenAdmin' },
     update: {},
     create: {
       username: 'RavenAdmin',
       password: 'Kaoriko2', 
       rol_id: rolAdmin.id,
       empleado_id: empleadoAdmin.id,
+      registro_completo: true, // 🔓 El admin entra con el switch activado
     },
   });
-  console.log(' Administrador creado (Usuario: admin, Pass: 123).\n');
 
-  console.log(' ¡Siembra terminada!.');
+  // 7. USUARIO ALUMNO DE PRUEBA (BLOQUEADO INICIALMENTE)
+  console.log('Creando alumno de prueba...');
+  await prisma.usuarios_sistema.upsert({
+    where: { username: '20210345' },
+    update: {},
+    create: {
+      username: '20210345',
+      password: 'password123',
+      rol_id: rolAlumno.id,
+      registro_completo: false, // 🔒 Este alumno verá el botón GRIS hasta llenar el formulario
+    },
+  });
+
+  console.log('\n¡Siembra terminada con éxito!');
+  console.log('Admin: RavenAdmin / Kaoriko2');
+  console.log('Alumno Test: 20210345 / password123');
 }
 
-//ORDEN DE ARRAQUE
 main()
   .catch((e) => {
-    console.error('Error fatal durante la siembra:', e);
+    console.error('Error en la siembra:', e);
     process.exit(1);
   })
   .finally(async () => {

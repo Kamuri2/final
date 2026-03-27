@@ -1,5 +1,5 @@
 import { InputType, Field, Int } from '@nestjs/graphql';
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsBoolean } from 'class-validator';
 
 @InputType()
 export class CreateUsuarioSistemaInput {
@@ -16,8 +16,25 @@ export class CreateUsuarioSistemaInput {
   @Field(() => Int)
   @IsNotEmpty()
   rol_id: number;
-
-  @Field(() => Int, { nullable: true })
+  
+  @Field({ nullable: true })
   @IsOptional()
-  alumno_id?: number; 
+  @IsString()
+  nombre_completo?: string;   
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  matricula?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  carrera?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  registro_completo?: boolean; 
+  
 }

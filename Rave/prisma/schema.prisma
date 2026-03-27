@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -10,9 +11,11 @@ model alumnos {
   id               Int               @id @default(autoincrement())
   matricula        String            @unique @db.VarChar(50)
   nombre_completo  String            @db.VarChar(150)
-  grupo_id         Int
-  estado_academico String            @db.VarChar(50)
-  grupos           grupos            @relation(fields: [grupo_id], references: [id], onUpdate: NoAction)
+  carrera          String?           @db.VarChar(100)
+  semestre         Int?
+  grupo_id         Int?
+  estado_academico String            @default("ACTIVO") @db.VarChar(50)
+  grupos           grupos?           @relation(fields: [grupo_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
   credenciales     credenciales[]
   sanciones        sanciones[]
   usuarios_sistema usuarios_sistema?
@@ -122,19 +125,20 @@ model sanciones {
 }
 
 model usuarios_sistema {
-  id               Int                @id @default(autoincrement())
-  username         String             @unique @db.VarChar(50)
-  password         String             @db.VarChar(255)
-  rol_id           Int
-  alumno_id        Int?               @unique
-  empleado_id      Int?               @unique
-  visitante_id     Int?               @unique
-  pases_visita     pases_visita[]
-  registros_acceso registros_acceso[]
-  alumnos          alumnos?           @relation(fields: [alumno_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  empleados        empleados?         @relation(fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  roles            roles              @relation(fields: [rol_id], references: [id], onUpdate: NoAction)
-  visitantes       visitantes?        @relation(fields: [visitante_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                Int                @id @default(autoincrement())
+  username          String             @unique @db.VarChar(50)
+  password          String             @db.VarChar(255)
+  rol_id            Int
+  registro_completo Boolean?           @default(false)
+  alumno_id         Int?               @unique
+  empleado_id       Int?               @unique
+  visitante_id      Int?               @unique
+  pases_visita      pases_visita[]
+  registros_acceso  registros_acceso[]
+  alumnos           alumnos?           @relation(fields: [alumno_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  empleados         empleados?         @relation(fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  roles             roles              @relation(fields: [rol_id], references: [id], onUpdate: NoAction)
+  visitantes        visitantes?        @relation(fields: [visitante_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model visitantes {

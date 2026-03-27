@@ -7,6 +7,11 @@ export class Alumno {
 
   @Field()
   matricula: string;
+  @Field({ nullable: true }) // 👈 AGREGA ESTO
+  carrera?: string;
+
+  @Field(() => Int, { nullable: true }) // 👈 AGREGA ESTO
+  semestre?: number;
 
   @Field()
   nombre_completo: string;

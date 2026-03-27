@@ -3,11 +3,13 @@
 # ------------------------------------------------------
 
 type Alumno {
+  carrera: String
   estado_academico: String!
   grupo_id: Int!
   id: Int!
   matricula: String!
   nombre_completo: String!
+  semestre: Int
 }
 
 type Carrera {
@@ -92,8 +94,11 @@ input CreateSancionInput {
 }
 
 input CreateUsuarioSistemaInput {
-  alumno_id: Int
+  carrera: String
+  matricula: String
+  nombre_completo: String
   password: String!
+  registro_completo: Boolean
   rol_id: Int!
   username: String!
 }
@@ -148,11 +153,13 @@ type Horario {
 }
 
 type LoginResponse {
+  id: Int!
   rol: String!
   token: String!
 }
 
 type Mutation {
+  actualizarAlumno(id: Int!, input: UpdateUsuariosSistemaInput!): UsuarioSistema!
   createAlumno(createAlumnoInput: CreateAlumnoInput!): Alumno!
   createCarrera(createCarreraInput: CreateCarreraInput!): Carrera!
   createCredenciale(createCredencialeInput: CreateCredencialeInput!): Credenciale!
@@ -165,9 +172,9 @@ type Mutation {
   createRegistroAcceso(createRegistrosAccesoInput: CreateRegistrosAccesoInput!): RegistroAcceso!
   createRole(createRoleInput: CreateRoleInput!): Role!
   createSancion(createSancionInput: CreateSancionInput!): Sancion!
-  createUsuariosSistema(createUsuariosSistemaInput: CreateUsuarioSistemaInput!): UsuarioSistema!
   createVisitante(createVisitanteInput: CreateVisitanteInput!): Visitante!
-  loginUsuario(password: String!, username: String!): LoginResponse!
+  login(password: String!, username: String!): LoginResponse!
+  registrarAlumno(input: CreateUsuarioSistemaInput!): UsuarioSistema!
   removeAlumno(id: Int!): Alumno!
   removeCarrera(id: Int!): Carrera!
   removeCredenciale(id: Int!): Credenciale!
@@ -180,7 +187,6 @@ type Mutation {
   removeRegistroAcceso(id: Int!): RegistroAcceso!
   removeRole(id: Int!): Role!
   removeSancion(id: Int!): Sancion!
-  removeUsuariosSistema(id: Int!): UsuarioSistema!
   removeVisitante(id: Int!): Visitante!
   updateAlumno(updateAlumnoInput: UpdateAlumnoInput!): Alumno!
   updateCarrera(updateCarreraInput: UpdateCarreraInput!): Carrera!
@@ -194,7 +200,6 @@ type Mutation {
   updateRegistroAcceso(updateRegistrosAccesoInput: UpdateRegistrosAccesoInput!): RegistroAcceso!
   updateRole(updateRoleInput: UpdateRoleInput!): Role!
   updateSancion(updateSancionInput: UpdateSancionInput!): Sancion!
-  updateUsuariosSistema(updateUsuariosSistemaInput: UpdateUsuariosSistemaInput!): UsuarioSistema!
   updateVisitante(updateVisitanteInput: UpdateVisitanteInput!): Visitante!
 }
 
@@ -225,6 +230,7 @@ type Query {
   empleado(id: Int!): Empleado
   empleadoPorNum(num_empleado: String!): Empleado
   empleados: [Empleado!]!
+  getUsuarioStatus(id: Int!): UsuarioSistema!
   grupo(id_grupo: Int!): Grupo
   grupos: [Grupo!]!
   horario(id: Int!): Horario
@@ -240,8 +246,6 @@ type Query {
   sancion(id: Int!): Sancion
   sanciones: [Sancion!]!
   sancionesActivasAlumno(alumno_id: Int!): [Sancion!]!
-  usuario(id: Int!): UsuarioSistema
-  usuarios: [UsuarioSistema!]!
   validarPaseQR(qr_hash: String!): PaseVisita
   validarQR(qr_hash: String!): Credenciale
   visitante(id: Int!): Visitante
@@ -357,11 +361,12 @@ input UpdateSancionInput {
 }
 
 input UpdateUsuariosSistemaInput {
-  alumno_id: Int
-  id_usuario: Int!
-  password: String
-  rol_id: Int
-  username: String
+  carrera: String
+  id: Int!
+  matricula: String
+  nombre_completo: String
+  registro_completo: Boolean
+  semestre: Int
 }
 
 input UpdateVisitanteInput {
@@ -372,9 +377,13 @@ input UpdateVisitanteInput {
 }
 
 type UsuarioSistema {
+  alumnos: Alumno
+  carrera: String!
   id: Int!
-  rol_id: Int!
-  roles: Role
+  matricula: String!
+  registro_completo: Boolean!
+  semestre: Int!
+  userId: Int!
   username: String!
 }
 
