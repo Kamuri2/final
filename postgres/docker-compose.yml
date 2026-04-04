@@ -1,37 +1,30 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  db_postgres:
-    image: postgres:15-alpine
-    container_name: postgres_credenciales
-    restart: always
-    environment:
-      POSTGRES_USER: RavenAdmin
-      POSTGRES_PASSWORD: Kaoriko2
-      POSTGRES_DB: sistema_qr
+  # 1. El nuevo corazón: SQL Server (MSSQL)
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: raven_mssql
     ports:
-      - "5432:5432"
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=RavenAdmin2026! # 👈 Contraseña fuerte obligatoria
+      - MSSQL_PID=Developer # Versión completa y gratuita para desarrollo
     volumes:
-      # Sincroniza el script de inicialización
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      # Persistencia de datos en tu Machenike
-      - pgdata:/var/lib/postgresql/data
+      - sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
 
-  cache_redis:
+  # 2. El motor de alta velocidad: Redis (Para validar QRs)
+  redis_raven:
     image: redis:alpine
-    container_name: redis_credenciales
-    restart: always
+    container_name: raven_redis
     ports:
       - "6379:6379"
-
-  panel_adminer:
-    image: adminer
-    container_name: adminer_credenciales
-    restart: always
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db_postgres
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
 volumes:
-  pgdata:
+  sqlserver_data:
+  redis_data:
