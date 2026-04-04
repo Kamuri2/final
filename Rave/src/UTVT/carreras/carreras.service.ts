@@ -12,22 +12,30 @@ export class CarrerasService {
       data: createCarreraInput,
     });
   }
-async findOne(id: number) {
-    return this.prisma.carreras.findUnique({ where: { id } });
+
+  async findOne(id: number) {
+    return this.prisma.carreras.findUnique({ 
+      where: { id },
+      include: { grupos: true } // 👈 También se lo ponemos aquí por si acaso lo buscas individualmente
+    });
   } 
+
   async remove(id: number) {
     return this.prisma.carreras.delete({ where: { id } });
   } 
+
   async update(id: number, updateCarreraInput: any) {
     return this.prisma.carreras.update({
       where: { id },
       data: updateCarreraInput,
     });
   }
+
   // Lista todas para que el Admin pueda seleccionarla
   async findAll() {
     return this.prisma.carreras.findMany({
       orderBy: { nombre: 'asc' },
+      include: { grupos: true }, // 👈 ESTA ES LA CLAVE: Le decimos a MSSQL que traiga los grupos anidados
     });
   }
 }

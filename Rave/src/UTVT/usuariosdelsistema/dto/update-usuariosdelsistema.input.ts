@@ -1,34 +1,44 @@
-import { InputType, Field, Int } from '@nestjs/graphql';
-import { IsInt, IsString, IsOptional, IsBoolean } from 'class-validator'; // 👈 ¡ESTO ES LO QUE FALTABA!
+import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
+import { CreateUsuarioSistemaInput } from './create-usuariosdelsistema.input';
+import { IsNotEmpty, IsInt, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 @InputType()
-export class UpdateUsuariosSistemaInput {
+export class UpdateUsuarioSistemaInput extends PartialType(CreateUsuarioSistemaInput) {
+  
+  // 🆔 El ID es OBLIGATORIO para saber a quién actualizar
   @Field(() => Int)
-  @IsInt() 
-  id: number; // 🛡️ Ahora el validador aceptará el número que mandas desde el cel
+  @IsNotEmpty()
+  @IsInt()
+  id: number;
 
-  @Field({ nullable: true })
-  @IsString()
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
   nombre_completo?: string;
 
-  @Field({ nullable: true })
-  @IsString()
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
   matricula?: string;
 
-  @Field({ nullable: true })
-  @IsString()
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
   carrera?: string;
 
   @Field(() => Int, { nullable: true })
-  @IsInt()
   @IsOptional()
-  semestre?: number; // 🔓 Ahora 'semestre' sí existe para NestJS
+  @IsInt()
+  semestre?: number;
+
+  // 🏫 AUTORIZADO: Ahora sí, el pasaporte para el grupo está sellado
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsInt()
+  grupo_id?: number; 
 
   @Field(() => Boolean, { nullable: true })
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   registro_completo?: boolean;
 }

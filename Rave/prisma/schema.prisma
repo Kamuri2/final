@@ -3,22 +3,22 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
 
 model alumnos {
-  id               Int               @id @default(autoincrement())
-  matricula        String            @unique @db.VarChar(50)
-  nombre_completo  String            @db.VarChar(150)
-  carrera          String?           @db.VarChar(100)
+  id               Int                @id @default(autoincrement())
+  matricula        String             @unique @db.VarChar(50)
+  nombre_completo  String             @db.VarChar(150)
+  carrera          String?            @db.VarChar(100)
   semestre         Int?
   grupo_id         Int?
-  estado_academico String            @default("ACTIVO") @db.VarChar(50)
-  grupos           grupos?           @relation(fields: [grupo_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  estado_academico String             @default("ACTIVO") @db.VarChar(50)
+  grupos           grupos?            @relation(fields: [grupo_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   credenciales     credenciales[]
   sanciones        sanciones[]
-  usuarios_sistema usuarios_sistema?
+  usuarios_sistema usuarios_sistema[]
 }
 
 model carreras {
@@ -28,7 +28,6 @@ model carreras {
   grupos grupos[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model credenciales {
   id               Int                @id @default(autoincrement())
   qr_hash          String             @unique @db.VarChar(255)
@@ -48,13 +47,13 @@ model departamentos {
 }
 
 model empleados {
-  id               Int               @id @default(autoincrement())
-  num_empleado     String            @unique @db.VarChar(50)
-  nombre_completo  String            @db.VarChar(150)
+  id               Int                @id @default(autoincrement())
+  num_empleado     String             @unique @db.VarChar(50)
+  nombre_completo  String             @db.VarChar(150)
   depto_id         Int
   credenciales     credenciales[]
-  departamentos    departamentos     @relation(fields: [depto_id], references: [id], onUpdate: NoAction)
-  usuarios_sistema usuarios_sistema?
+  departamentos    departamentos      @relation(fields: [depto_id], references: [id], onUpdate: NoAction)
+  usuarios_sistema usuarios_sistema[]
 }
 
 model grupos {
@@ -70,8 +69,8 @@ model grupos {
 model horarios {
   id           Int      @id @default(autoincrement())
   dia_semana   String   @db.VarChar(15)
-  hora_entrada DateTime @db.Time(6)
-  hora_salida  DateTime @db.Time(6)
+  hora_entrada DateTime @db.Time
+  hora_salida  DateTime @db.Time
   grupo_id     Int
   grupos       grupos   @relation(fields: [grupo_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
@@ -79,7 +78,7 @@ model horarios {
 model pases_visita {
   id               Int                @id @default(autoincrement())
   qr_hash          String             @unique @db.VarChar(255)
-  expiracion       DateTime           @db.Timestamp(6)
+  expiracion       DateTime           
   visitante_id     Int
   autoriza_id      Int
   usuarios_sistema usuarios_sistema   @relation(fields: [autoriza_id], references: [id], onUpdate: NoAction)
@@ -94,10 +93,9 @@ model puntos_acceso {
   registros_acceso registros_acceso[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model registros_acceso {
   id               Int              @id @default(autoincrement())
-  fecha_hora       DateTime         @default(now()) @db.Timestamp(6)
+  fecha_hora       DateTime         @default(now()) 
   concedido        Boolean
   motivo_rechazo   String?          @db.VarChar(255)
   punto_id         Int
@@ -130,9 +128,10 @@ model usuarios_sistema {
   password          String             @db.VarChar(255)
   rol_id            Int
   registro_completo Boolean?           @default(false)
-  alumno_id         Int?               @unique
-  empleado_id       Int?               @unique
-  visitante_id      Int?               @unique
+  alumno_id         Int?               
+  empleado_id       Int?               
+  visitante_id      Int?      
+  grupo_id          Int?               
   pases_visita      pases_visita[]
   registros_acceso  registros_acceso[]
   alumnos           alumnos?           @relation(fields: [alumno_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -142,10 +141,10 @@ model usuarios_sistema {
 }
 
 model visitantes {
-  id               Int               @id @default(autoincrement())
-  nombre_completo  String            @db.VarChar(150)
-  identificacion   String            @db.VarChar(100)
-  motivo           String            @db.VarChar(255)
-  pases_visita     pases_visita[]
-  usuarios_sistema usuarios_sistema?
+  id              Int               @id @default(autoincrement())
+  nombre_completo String            @db.VarChar(150)
+  identificacion  String            @db.VarChar(100)
+  motivo          String            @db.VarChar(255)
+  pases_visita    pases_visita[]
+  usuarios_sistema usuarios_sistema[]
 }

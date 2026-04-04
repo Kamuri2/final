@@ -5,15 +5,17 @@
 type Alumno {
   carrera: String
   estado_academico: String!
-  grupo_id: Int!
+  grupo_id: Int
   id: Int!
   matricula: String!
   nombre_completo: String!
   semestre: Int
+  userId: Int
 }
 
 type Carrera {
   clave: String!
+  grupos: [Grupo!]
   id: Int!
   nombre: String!
 }
@@ -95,11 +97,13 @@ input CreateSancionInput {
 
 input CreateUsuarioSistemaInput {
   carrera: String
+  grupo_id: Int
   matricula: String
   nombre_completo: String
   password: String!
   registro_completo: Boolean
   rol_id: Int!
+  semestre: Int
   username: String!
 }
 
@@ -159,7 +163,7 @@ type LoginResponse {
 }
 
 type Mutation {
-  actualizarAlumno(id: Int!, input: UpdateUsuariosSistemaInput!): UsuarioSistema!
+  actualizarAlumno(id: Int!, input: UpdateUsuarioSistemaInput!): UsuarioSistema!
   createAlumno(createAlumnoInput: CreateAlumnoInput!): Alumno!
   createCarrera(createCarreraInput: CreateCarreraInput!): Carrera!
   createCredenciale(createCredencialeInput: CreateCredencialeInput!): Credenciale!
@@ -360,13 +364,17 @@ input UpdateSancionInput {
   motivo: String
 }
 
-input UpdateUsuariosSistemaInput {
+input UpdateUsuarioSistemaInput {
   carrera: String
+  grupo_id: Int
   id: Int!
   matricula: String
   nombre_completo: String
+  password: String
   registro_completo: Boolean
+  rol_id: Int
   semestre: Int
+  username: String
 }
 
 input UpdateVisitanteInput {
@@ -377,13 +385,10 @@ input UpdateVisitanteInput {
 }
 
 type UsuarioSistema {
+  alumno_id: Int
   alumnos: Alumno
-  carrera: String!
   id: Int!
-  matricula: String!
   registro_completo: Boolean!
-  semestre: Int!
-  userId: Int!
   username: String!
 }
 

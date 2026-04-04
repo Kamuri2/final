@@ -2,7 +2,7 @@ import { Resolver, Query, Mutation, Args, Int, ObjectType, Field } from '@nestjs
 import { UsuarioSistemaService } from './usuariosdelsistema.service';
 import { UsuarioSistema } from './entities/usuariosdelsistema.entity';
 import { CreateUsuarioSistemaInput } from './dto/create-usuariosdelsistema.input';
-import { UpdateUsuariosSistemaInput } from './dto/update-usuariosdelsistema.input'; // 👈 EL IMPORT QUE FALTABA
+import { UpdateUsuarioSistemaInput } from './dto/update-usuariosdelsistema.input'; // 👈 EL IMPORT QUE FALTABA
 import { SetMetadata } from '@nestjs/common';
 
 export const Public = () => SetMetadata('isPublic', true);
@@ -49,7 +49,7 @@ export class UsuariosSistemaResolver {
   @Mutation(() => UsuarioSistema)
   async actualizarAlumno(
     @Args('id', { type: () => Int }) id: number,
-    @Args('input') input: UpdateUsuariosSistemaInput,
+    @Args('input') input: UpdateUsuarioSistemaInput,
   ) {
     return this.usuariosService.update(id, input);
   }

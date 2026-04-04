@@ -2,70 +2,132 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('--- Iniciando Siembra de RavenID en la Machenike ---');
+  console.log('--- 🌱 Iniciando Siembra de RavenID (Estrictamente Funcional) ---');
 
-  // 1. ROLES
-  console.log('Creando roles...');
-  const rolAdmin = await prisma.roles.upsert({
-    where: { nombre_rol: 'Administrador' },
-    update: {},
-    create: { nombre_rol: 'Administrador' },
-  });
-  const rolAlumno = await prisma.roles.upsert({
-    where: { nombre_rol: 'Alumno' },
-    update: {},
-    create: { nombre_rol: 'Alumno' },
-  });
-  const rolGuardia = await prisma.roles.upsert({
-    where: { nombre_rol: 'Guardia' },
-    update: {},
-    create: { nombre_rol: 'Guardia' },
+  // ==========================================
+  // 1. ROLES (1: ADMIN, 2: ALUMNO, 3: PROFESOR, 4: ADMINISTRATIVO)
+  // ==========================================
+  console.log('Configurando roles...');
+  const rolesData = [
+    { nombre_rol: 'ADMIN' },
+    { nombre_rol: 'ALUMNO' },
+    { nombre_rol: 'PROFESOR' },
+    { nombre_rol: 'ADMINISTRATIVO' }
+  ];
+
+  for (const rol of rolesData) {
+    await prisma.roles.upsert({
+      where: { nombre_rol: rol.nombre_rol },
+      update: {},
+      create: rol,
+    });
+  }
+
+  // ==========================================
+  // 2. CARRERAS (Las 13 oficiales)
+  // ==========================================
+  console.log('Configurando carreras oficiales...');
+  const carrerasData = [
+    { nombre: 'Ingeniería en Logística Aeroportuaria', clave: 'LOG_AERO' },
+    { nombre: 'Ingeniería Ferroviaria', clave: 'FERRO' },
+    { nombre: 'Ingeniería en Mecatrónica', clave: 'MEC' },
+    { nombre: 'Ingeniería en Mantenimiento Industrial', clave: 'MANT_IND' },
+    { nombre: 'Ingeniería en Mecatrónica (Mixto)', clave: 'MEC_MIX' },
+    { nombre: 'Licenciatura en Negocios y Mercadotecnia', clave: 'NEG_MERC' },
+    { nombre: 'Ingeniería en Tecnologías de la Información e Innovación Digital', clave: 'TICS' },
+    { nombre: 'Licenciatura en Negocios y Mercadotecnia (Mixto)', clave: 'NEG_MIX' },
+    { nombre: 'Ingeniería Industrial', clave: 'IND' },
+    { nombre: 'Ingeniería Ambiental y Sustentabilidad', clave: 'AMB_SUST' },
+    { nombre: 'Licenciatura en Protección Civil', clave: 'PROT_CIV' },
+    { nombre: 'Licenciatura en Enfermería', clave: 'ENF' },
+    { nombre: 'Licenciatura en Administración', clave: 'ADMIN' }
+  ];
+
+  for (const carrera of carrerasData) {
+    await prisma.carreras.upsert({
+      where: { clave: carrera.clave },
+      update: { nombre: carrera.nombre },
+      create: carrera,
+    });
+  }
+
+  // ==========================================
+  // 3. GRUPOS (Exclusivo de TICS - Sin borrar para evitar P2003)
+  // ==========================================
+  console.log('Configurando grupos de TICS...');
+  
+  const carreraTics = await prisma.carreras.findUnique({
+    where: { clave: 'TICS' }
   });
 
-  // 2. CARRERAS
-  console.log('Creando carreras...');
-  const dsm = await prisma.carreras.upsert({
-    where: { clave: 'DSM' },
-    update: {},
-    create: { nombre: 'Desarrollo de Software Multiplataforma', clave: 'DSM' },
-  });
-  const ird = await prisma.carreras.upsert({
-    where: { clave: 'IRD' },
-    update: {},
-    create: { nombre: 'Infraestructura de Redes Digitales', clave: 'IRD' },
+  if (carreraTics) {
+    const gruposTics = [
+      { nombre: 'DSM52', semestre: 5 },
+      { nombre: 'DSM54', semestre: 5 },
+      { nombre: 'DSM55', semestre: 5 },
+      { nombre: 'IRD21', semestre: 2 },
+      { nombre: 'IRD24', semestre: 2 }
+    ];
+
+    for (const grupo of gruposTics) {
+      const existeGrupo = await prisma.grupos.findFirst({
+        where: { nombre: grupo.nombre, carrera_id: carreraTics.id }
+      });
+
+      if (!existeGrupo) {
+        await prisma.grupos.create({
+          data: {
+            nombre: grupo.nombre,
+            semestre: grupo.semestre,
+            carrera_id: carreraTics.id
+          }
+        });
+      }
+    }
+  }
+
+  // ==========================================
+  // 4. DEPARTAMENTOS Y PUNTOS DE ACCESO (Base)
+  // ==========================================
+  console.log('Configurando infraestructura física...');
+  let deptoSistemas = await prisma.departamentos.findFirst({
+    where: { nombre_depto: 'Sistemas y TI' }
   });
 
-  // 3. GRUPOS (Limpiamos y creamos para evitar duplicados de ID)
-  console.log('Configurando grupos...');
-  await prisma.grupos.deleteMany(); 
-  const grupo52 = await prisma.grupos.create({
-    data: { nombre: 'DSM 52', semestre: 5, carrera_id: dsm.id },
-  });
+  if (!deptoSistemas) {
+    deptoSistemas = await prisma.departamentos.create({
+      data: { nombre_depto: 'Sistemas y TI' }
+    });
+  }
 
-  // 4. DEPARTAMENTOS
-  console.log('Creando departamentos...');
-  const deptoSistemas = await prisma.departamentos.upsert({
-    where: { id: 1 }, // Usamos ID para el upsert de depto
-    update: {},
-    create: { id: 1, nombre_depto: 'Sistemas y TI' },
-  });
+  const puntosAcceso = [
+    { ubicacion: 'Entrada Principal - Torniquete 1', tipo: 'ENTRADA' },
+    { ubicacion: 'Laboratorio Cómputo B', tipo: 'AMBOS' }
+  ];
 
-  // 5. PUNTOS DE ACCESO
-  console.log('Configurando puntos de entrada...');
-  await prisma.puntos_acceso.deleteMany();
-  await prisma.puntos_acceso.createMany({
-    data: [
-      { ubicacion: 'Entrada Principal - Torniquete 1', tipo: 'ENTRADA' },
-      { ubicacion: 'Laboratorio Cómputo B', tipo: 'AMBOS' },
-    ],
-  });
+  for (const punto of puntosAcceso) {
+    const existePunto = await prisma.puntos_acceso.findFirst({
+      where: { ubicacion: punto.ubicacion }
+    });
 
-  // 6. USUARIO ADMINISTRADOR (CON ACCESO TOTAL)
+    if (!existePunto) {
+      await prisma.puntos_acceso.create({
+        data: punto
+      });
+    }
+  }
+
+  // ==========================================
+  // 5. USUARIO ADMINISTRADOR ÚNICO
+  // ==========================================
   console.log('Creando Administrador maestro...');
+  const rolAdmin = await prisma.roles.findUnique({ where: { nombre_rol: 'ADMIN' } });
+  
   const empleadoAdmin = await prisma.empleados.upsert({
     where: { num_empleado: 'ADMIN-001' },
     update: {},
@@ -76,39 +138,31 @@ async function main() {
     },
   });
 
+  // 🔒 Encriptación de la contraseña del Admin
+  const saltRounds = 10;
+  const adminHashedPassword = await bcrypt.hash('Kaoriko2', saltRounds);
+
   await prisma.usuarios_sistema.upsert({
     where: { username: 'RavenAdmin' },
-    update: {},
+    update: {
+      password: adminHashedPassword, // Actualiza a la versión encriptada si ya existe
+    },
     create: {
       username: 'RavenAdmin',
-      password: 'Kaoriko2', 
-      rol_id: rolAdmin.id,
+      password: adminHashedPassword, // Crea con la versión encriptada
+      rol_id: rolAdmin!.id,
       empleado_id: empleadoAdmin.id,
-      registro_completo: true, // 🔓 El admin entra con el switch activado
+      registro_completo: true,
     },
   });
 
-  // 7. USUARIO ALUMNO DE PRUEBA (BLOQUEADO INICIALMENTE)
-  console.log('Creando alumno de prueba...');
-  await prisma.usuarios_sistema.upsert({
-    where: { username: '20210345' },
-    update: {},
-    create: {
-      username: '20210345',
-      password: 'password123',
-      rol_id: rolAlumno.id,
-      registro_completo: false, // 🔒 Este alumno verá el botón GRIS hasta llenar el formulario
-    },
-  });
-
-  console.log('\n¡Siembra terminada con éxito!');
-  console.log('Admin: RavenAdmin / Kaoriko2');
-  console.log('Alumno Test: 20210345 / password123');
+  console.log('\n✅ ¡Siembra funcional terminada de forma segura!');
+  console.log('🔐 Admin: RavenAdmin / Kaoriko2 (Protegido con Hash)');
 }
 
 main()
   .catch((e) => {
-    console.error('Error en la siembra:', e);
+    console.error('❌ Error en la siembra:', e);
     process.exit(1);
   })
   .finally(async () => {

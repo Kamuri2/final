@@ -6,19 +6,25 @@ export class Alumno {
   id: number;
 
   @Field()
-  matricula: string;
-  @Field({ nullable: true }) // 👈 AGREGA ESTO
-  carrera?: string;
-
-  @Field(() => Int, { nullable: true }) // 👈 AGREGA ESTO
-  semestre?: number;
-
-  @Field()
   nombre_completo: string;
 
-  @Field(() => Int)
-  grupo_id: number;
-
   @Field()
+  matricula: string;
+
+  @Field({ nullable: true }) 
+  carrera?: string;
+
+  @Field(() => Int, { nullable: true }) 
+  semestre?: number;
+
+  // 🏫 VITAL: Esto permite que el Home lea el ID del grupo
+  @Field(() => Int, { nullable: true })
+  grupo_id?: number;
+
+  @Field({ defaultValue: 'ACTIVO' })
   estado_academico: string;
+
+  // 🆔 Relación opcional por si necesitas saber qué usuario le pertenece
+  @Field(() => Int, { nullable: true })
+  userId?: number;
 }
