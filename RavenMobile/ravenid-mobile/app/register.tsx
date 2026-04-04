@@ -3,16 +3,15 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-// app/register.tsx
-
 const REGISTRAR_ALUMNO = gql`
   mutation Registrar($input: CreateUsuarioSistemaInput!) {
     registrarAlumno(input: $input) {
-      id # 👈 Pedimos el ID real
-      username    # 👈 Usamos username en lugar de matricula
+      id
+      username
     }
   }
 `;
+
 export default function RegisterScreen() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -20,12 +19,19 @@ export default function RegisterScreen() {
 
     const [registrar, { loading }] = useMutation(REGISTRAR_ALUMNO, {
         onCompleted: () => {
-            Alert.alert('¡Éxito!', 'Alumno registrado correctamente. Ya puedes iniciar sesión.');
-            router.replace('/'); // Volver al login
+            // ✅ Mensaje de éxito solicitado
+            Alert.alert('¡Éxito!', 'Registrado con éxito. Ya puedes iniciar sesión.');
+            router.replace('/');
         },
         onError: (error) => {
-            console.error(error);
-            Alert.alert('Error', 'No se pudo registrar. ¿Esa matrícula ya existe?');
+            console.log("Error detallado:", JSON.stringify(error, null, 2));
+
+            // 🔍 Detectamos si es un error de usuario duplicado (Unique Constraint)
+            if (error.message.includes('Unique constraint') || error.message.includes('already exists')) {
+                Alert.alert('Usuario Duplicado', 'El nombre de usuario "' + username + '" ya está registrado. Intenta con otro.');
+            } else {
+                Alert.alert('Error', 'No se pudo conectar con el servidor.');
+            }
         }
     });
 
@@ -46,12 +52,12 @@ export default function RegisterScreen() {
                     input: {
                         username: username.trim(),
                         password: password,
-                        rol_id: 2 // Aunque el backend lo fuerce, lo enviamos por claridad
+                        rol_id: 2
                     }
                 }
             });
         } catch (e) {
-            // Los errores se manejan en el onError del hook
+            // El manejo se hace en onError
         }
     };
 
@@ -116,10 +122,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         padding: 30,
         borderRadius: 30,
-        ...Platform.select({
-            web: { boxShadow: '0px 10px 25px rgba(193, 225, 193, 0.2)' },
-            default: { shadowColor: '#C1E1C1', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 15, elevation: 8 }
-        })
+        elevation: 8,
+        shadowColor: '#C1E1C1',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 15,
     },
     inputLabel: { color: '#4A4A4A', fontSize: 14, fontWeight: '600', marginBottom: 8, marginLeft: 5 },
     styledInput: {
@@ -133,16 +140,12 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
     mainButton: {
-        backgroundColor: '#C1E1C1', // Verde Matcha
+        backgroundColor: '#C1E1C1',
         padding: 18,
         borderRadius: 20,
         alignItems: 'center',
         marginTop: 10,
         marginBottom: 20,
-        ...Platform.select({
-            web: { boxShadow: '0px 8px 15px rgba(193, 225, 193, 0.4)' },
-            default: { shadowColor: '#C1E1C1', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 }
-        })
     },
     mainButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 18, letterSpacing: 1 },
     backLink: { alignItems: 'center' },

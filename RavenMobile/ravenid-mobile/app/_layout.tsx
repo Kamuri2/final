@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 
 const client = new ApolloClient({
 
-  uri: 'http://192.168.100.7:3000/graphql',
+  uri: 'http://192.168.100.16:3000/graphql',
   cache: new InMemoryCache(),
 });
 
