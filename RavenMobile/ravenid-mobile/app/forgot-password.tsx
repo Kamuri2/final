@@ -1,10 +1,25 @@
 import { gql, useMutation } from '@apollo/client';
 import { router } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Dimensions } from 'react-native';
+import {
+    ActivityIndicator,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    Dimensions,
+    Animated,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableWithoutFeedback,
+    Keyboard,
+    StatusBar,
+    ScrollView
+} from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const normalize = (size: number) => Math.round((width / 375) * size);
 
 const SOLICITAR_PIN = gql`
@@ -20,36 +35,66 @@ const RESETEAR_PASS = gql`
 `;
 
 export default function ForgotPasswordScreen() {
-    const { theme } = useTheme();
+    const { theme, isDarkMode } = useTheme();
     const [email, setEmail] = useState('');
     const [pin, setPin] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [step, setStep] = useState(1);
+    const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' } | null>(null);
 
-    // 🛡️ GUARDIA DE MONTAJE: Para evitar fugas de memoria y crashes al desmontar
     const isMounted = useRef(true);
+    const fadeEntrance = useRef(new Animated.Value(0)).current;
+    const slideEntrance = useRef(new Animated.Value(30)).current;
+    const sheetAnim = useRef(new Animated.Value(height)).current;
+
     useEffect(() => {
+        isMounted.current = true;
+        Animated.parallel([
+            Animated.timing(fadeEntrance, { toValue: 1, duration: 600, useNativeDriver: true }),
+            Animated.timing(slideEntrance, { toValue: 0, duration: 600, useNativeDriver: true })
+        ]).start();
         return () => { isMounted.current = false; };
     }, []);
 
     const [solicitarPin, { loading: loadingPin }] = useMutation(SOLICITAR_PIN);
     const [resetearPass, { loading: loadingReset }] = useMutation(RESETEAR_PASS);
 
+    // --- 🛠️ FIX: FUNCIÓN DE STATUS CON AUTO-OCULTADO PARA TODO ---
+    const showStatus = (text: string, type: 'error' | 'success') => {
+        if (!isMounted.current) return;
+        setStatusMessage({ text, type });
+
+        // Sube el mensaje
+        Animated.spring(sheetAnim, { toValue: 0, tension: 15, friction: 8, useNativeDriver: true }).start();
+
+        // Baja el mensaje automáticamente después de 3 segundos (Success o Error)
+        setTimeout(() => {
+            if (isMounted.current) {
+                Animated.timing(sheetAnim, { toValue: height, duration: 400, useNativeDriver: true }).start(() => {
+                    if (isMounted.current) setStatusMessage(null);
+                });
+            }
+        }, 3000);
+    };
+
     const handleSolicitar = async () => {
-        if (!email.trim().includes('@')) return Alert.alert('Aviso', 'Ingresa un correo válido.');
+        if (!email.trim().includes('@')) return showStatus('INGRESA UN CORREO VÁLIDO', 'error');
         try {
             await solicitarPin({ variables: { email: email.trim().toLowerCase() } });
             if (isMounted.current) {
-                Alert.alert('PIN Enviado', 'Revisa tu bandeja de entrada.');
-                setStep(2);
+                showStatus('PIN ENVIADO', 'success');
+                // Esperamos un poco a que el mensaje se vea antes de cambiar de paso
+                setTimeout(() => {
+                    if (isMounted.current) setStep(2);
+                }, 1000);
             }
         } catch (e: any) {
-            if (isMounted.current) Alert.alert('Aviso', 'Correo no registrado.');
+            if (isMounted.current) showStatus('CORREO NO REGISTRADO', 'error');
         }
     };
 
     const handleReset = async () => {
-        if (pin.length < 6 || newPassword.length < 4) return Alert.alert('Aviso', 'Datos incompletos.');
+        if (pin.length < 6 || newPassword.length < 4) return showStatus('DATOS INCOMPLETOS', 'error');
 
         try {
             const { data } = await resetearPass({
@@ -61,132 +106,148 @@ export default function ForgotPasswordScreen() {
             });
 
             if (data && isMounted.current) {
-                // 🛡️ NAVEGACIÓN SEGURA: Usamos un timeout mínimo para que el Alert no bloquee el hilo de UI
-                Alert.alert(
-                    '¡Éxito!',
-                    'Contraseña actualizada correctamente.',
-                    [{
-                        text: 'Aceptar',
-                        onPress: () => {
-                            // Usamos replace con un objeto para forzar el reinicio del stack al login
-                            setTimeout(() => {
-                                router.replace('/' as any);
-                            }, 100);
-                        }
-                    }],
-                    { cancelable: false }
-                );
+                showStatus('CONTRASEÑA ACTUALIZADA', 'success');
+                setTimeout(() => {
+                    if (isMounted.current) router.replace('/' as any);
+                }, 2000);
             }
         } catch (e: any) {
-            if (isMounted.current) {
-                Alert.alert('Error', 'El PIN es incorrecto o ya caducó.');
-            }
+            if (isMounted.current) showStatus('PIN INCORRECTO O CADUCADO', 'error');
         }
     };
 
-    // 🛡️ FUNCIÓN VOLVER SEGURA
     const goBackSafe = () => {
-        if (router.canGoBack()) {
-            router.back();
-        } else {
-            router.replace('/' as any);
-        }
+        if (router.canGoBack()) router.back();
+        else router.replace('/' as any);
     };
 
     return (
-        <ScrollView
-            style={{ backgroundColor: theme.bg }}
-            contentContainerStyle={styles.container}
-            keyboardShouldPersistTaps="handled"
-        >
-            <View style={styles.header}>
-                <Text style={[styles.japanese, { color: theme.primary }]}>パスワード再設定</Text>
-                <Text style={[styles.title, { color: theme.text }]}>RECUPERAR</Text>
-                <Text style={[styles.subtitle, { color: theme.primary }]}>PASO {step} DE 2</Text>
+        <View style={[styles.mainContainer, { backgroundColor: theme.bg }]}>
+            <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+
+            <View style={styles.diagonalWrapper} pointerEvents="none">
+                <View style={styles.diagonalShape} />
+                <View style={styles.headerTextContainer}>
+                    <Text style={styles.headerTitle}>RECUPERACION</Text>
+                    <Text style={styles.headerSubtitle}>PASO {step} DE 2</Text>
+                </View>
             </View>
 
-            <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-                {step === 1 ? (
-                    <View>
-                        <Text style={[styles.label, { color: theme.subtext }]}>CORREO VINCULADO</Text>
-                        <TextInput
-                            style={[styles.input, { color: theme.text, borderColor: theme.border }]}
-                            placeholder="ejemplo@utvt.edu.mx"
-                            placeholderTextColor={theme.subtext + '80'}
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                        />
-                        <TouchableOpacity
-                            style={[styles.btn, { backgroundColor: theme.primary }]}
-                            onPress={handleSolicitar}
-                            disabled={loadingPin}
-                        >
-                            {loadingPin ? <ActivityIndicator color="#FFF" /> : <Text style={styles.btnText}>ONTENER CODIGO</Text>}
-                        </TouchableOpacity>
-                    </View>
-                ) : (
-                    <View>
-                        <Text style={[styles.label, { color: theme.subtext }]}>CÓDIGO PIN (6 DÍGITOS)</Text>
-                        <TextInput
-                            style={[styles.input, { color: theme.text, borderColor: theme.border }]}
-                            placeholder="000000"
-                            placeholderTextColor={theme.subtext + '80'}
-                            value={pin}
-                            onChangeText={setPin}
-                            keyboardType="number-pad"
-                            maxLength={6}
-                        />
-                        <Text style={[styles.label, { color: theme.subtext }]}>NUEVA CONTRASEÑA</Text>
-                        <TextInput
-                            style={[styles.input, { color: theme.text, borderColor: theme.border }]}
-                            placeholder="••••••••"
-                            placeholderTextColor={theme.subtext + '80'}
-                            secureTextEntry
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                        />
-                        <TouchableOpacity
-                            style={[styles.btn, { backgroundColor: theme.primary }]}
-                            onPress={handleReset}
-                            disabled={loadingReset}
-                        >
-                            {loadingReset ? <ActivityIndicator color="#FFF" /> : <Text style={styles.btnText}>RESTABLECER AHORA</Text>}
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setStep(1)} style={styles.textLink}>
-                            <Text style={{ color: theme.subtext, fontSize: 12 }}>¿No te llegó? Reintentar</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                        <Animated.View style={{ flex: 1, opacity: fadeEntrance, transform: [{ translateY: slideEntrance }] }}>
+                            <View style={styles.topSpacer} />
 
-                <TouchableOpacity onPress={goBackSafe} style={styles.textLink}>
-                    <Text style={{ color: theme.subtext, fontWeight: 'bold' }}>CANCELAR</Text>
-                </TouchableOpacity>
-            </View>
-        </ScrollView>
+                            {step === 1 ? (
+                                <View>
+                                    <Text style={styles.sectionLabel}></Text>
+                                    <View style={styles.inputGroup}>
+                                        <Text style={[styles.inputTitle, { color: theme.text }]}>CORREO VINCULADO</Text>
+                                        <TextInput
+                                            style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border }]}
+                                            placeholder="ejemplo@utvt.edu.mx"
+                                            placeholderTextColor={theme.subtext}
+                                            value={email}
+                                            onChangeText={setEmail}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                    </View>
+                                    <TouchableOpacity
+                                        style={[styles.mainBtn, loadingPin && { opacity: 0.7 }]}
+                                        onPress={handleSolicitar}
+                                        disabled={loadingPin}
+                                    >
+                                        {loadingPin ? <ActivityIndicator color="#FFF" /> : <Text style={styles.mainBtnText}>OBTENER CÓDIGO</Text>}
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                <View>
+                                    <Text style={styles.sectionLabel}>RESTABLECER CONTRASEÑA</Text>
+                                    <View style={styles.inputGroup}>
+                                        <Text style={[styles.inputTitle, { color: theme.text }]}>CÓDIGO PIN (6 DÍGITOS)</Text>
+                                        <TextInput
+                                            style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border }]}
+                                            placeholder="000000"
+                                            placeholderTextColor={theme.subtext}
+                                            value={pin}
+                                            onChangeText={setPin}
+                                            keyboardType="number-pad"
+                                            maxLength={6}
+                                        />
+                                    </View>
+                                    <View style={styles.inputGroup}>
+                                        <Text style={[styles.inputTitle, { color: theme.text }]}>NUEVA CONTRASEÑA</Text>
+                                        <TextInput
+                                            style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border }]}
+                                            placeholder="••••••••"
+                                            placeholderTextColor={theme.subtext}
+                                            secureTextEntry
+                                            value={newPassword}
+                                            onChangeText={setNewPassword}
+                                        />
+                                    </View>
+                                    <TouchableOpacity
+                                        style={[styles.mainBtn, loadingReset && { opacity: 0.7 }]}
+                                        onPress={handleReset}
+                                        disabled={loadingReset}
+                                    >
+                                        {loadingReset ? <ActivityIndicator color="#FFF" /> : <Text style={styles.mainBtnText}>RESTABLECER AHORA</Text>}
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => setStep(1)} style={styles.backBtn}>
+                                        <Text style={[styles.backBtnText, { color: theme.subtext }]}>¿No llegó el PIN? <Text style={styles.accentText}>REINTENTAR</Text></Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            <TouchableOpacity onPress={goBackSafe} style={styles.cancelBtn}>
+                                <Text style={styles.cancelBtnText}>CANCELAR OPERACIÓN</Text>
+                            </TouchableOpacity>
+
+                        </Animated.View>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+
+            {statusMessage && (
+                <Animated.View style={[styles.premiumSheet, { transform: [{ translateY: sheetAnim }], borderTopColor: statusMessage.type === 'success' ? '#B08D6D' : '#FF4D4D' }]}>
+                    <View style={styles.handle} />
+                    <Text style={[styles.sheetStatusText, { color: statusMessage.type === 'success' ? '#B08D6D' : '#FF4D4D' }]}>
+                        {statusMessage.text}
+                    </Text>
+                    <Text style={styles.sheetSubText}></Text>
+                </Animated.View>
+            )}
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { padding: normalize(30), flexGrow: 1, justifyContent: 'center' },
-    header: { alignItems: 'center', marginBottom: 30 },
-    japanese: { fontSize: 10, letterSpacing: 5, fontWeight: 'bold' },
-    title: { fontSize: normalize(32), fontWeight: '900', letterSpacing: 2 },
-    subtitle: { fontSize: 10, fontWeight: 'bold', letterSpacing: 3, marginTop: 5 },
-    card: {
-        padding: 30,
-        borderRadius: 30,
-        borderWidth: 1,
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10
-    },
-    label: { fontSize: 10, fontWeight: 'bold', marginBottom: 5 },
-    input: { borderBottomWidth: 1, padding: 10, marginBottom: 20, fontSize: 16 },
-    btn: { padding: 18, borderRadius: 15, alignItems: 'center', marginTop: 10, marginBottom: 10 },
-    btnText: { color: '#FFF', fontWeight: 'bold', letterSpacing: 1 },
-    textLink: { marginTop: 15, alignItems: 'center' }
+    mainContainer: { flex: 1 },
+    scrollContent: { paddingHorizontal: width * 0.1, paddingBottom: 50 },
+    diagonalWrapper: { position: 'absolute', top: 0, width: width, height: height * 0.45, zIndex: 0 },
+    diagonalShape: { position: 'absolute', top: -height * 0.15, left: -width * 0.2, width: width * 1.5, height: height * 0.5, backgroundColor: '#B08D6D', transform: [{ rotate: '-12deg' }] },
+    headerTextContainer: { position: 'absolute', top: height * 0.1, width: width, alignItems: 'center' },
+    headerTitle: { fontSize: normalize(32), fontWeight: '900', color: '#FFF', letterSpacing: 8 },
+    headerSubtitle: { fontSize: 10, fontWeight: '900', color: '#FFF', letterSpacing: 3, marginTop: 5, opacity: 0.8 },
+    topSpacer: { height: height * 0.35 },
+    sectionLabel: { color: '#B08D6D', fontSize: 10, fontWeight: '900', letterSpacing: 4, textAlign: 'center', marginBottom: 30 },
+    inputGroup: { marginBottom: 18 },
+    inputTitle: { fontSize: 9, fontWeight: '700', marginBottom: 8, letterSpacing: 2 },
+    inputBlock: { padding: normalize(14), borderRadius: 8, fontSize: 16, borderLeftWidth: 3, borderLeftColor: '#B08D6D' },
+    mainBtn: { backgroundColor: '#B08D6D', padding: normalize(18), borderRadius: 8, alignItems: 'center', marginTop: 10, elevation: 10 },
+    mainBtnText: { color: '#FFF', fontWeight: '900', letterSpacing: 2, fontSize: 13 },
+    backBtn: { marginTop: 20, alignItems: 'center' },
+    backBtnText: { fontSize: 10, letterSpacing: 1 },
+    cancelBtn: { marginTop: 30, alignItems: 'center' },
+    cancelBtnText: { color: '#FF4D4D', fontWeight: '900', fontSize: 10, letterSpacing: 2 },
+    accentText: { color: '#B08D6D', fontWeight: 'bold' },
+    premiumSheet: { position: 'absolute', bottom: 0, width: width, backgroundColor: '#F2E7D5', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingTop: 15, paddingBottom: Platform.OS === 'ios' ? 60 : 40, minHeight: height * 0.18, alignItems: 'center', zIndex: 9999, borderTopWidth: 2, elevation: 25 },
+    handle: { width: 50, height: 5, backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: 3, marginBottom: 25 },
+    sheetStatusText: { fontSize: normalize(16), fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+    sheetSubText: { fontSize: 9, color: 'rgba(0,0,0,0.4)', fontWeight: '700', marginTop: 8 }
 });
