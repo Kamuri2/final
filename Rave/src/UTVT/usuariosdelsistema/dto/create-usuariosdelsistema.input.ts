@@ -49,4 +49,9 @@ export class CreateUsuarioSistemaInput {
   @IsOptional()
   @IsBoolean()
   registro_completo?: boolean; 
+  
+  @Field()
+  @IsNotEmpty({ message: 'El correo es obligatorio' }) // 👈 Agregado
+  @IsString()                                         // 👈 Agregado
+  email: string;
 }

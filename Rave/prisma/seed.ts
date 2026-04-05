@@ -146,6 +146,7 @@ async function main() {
     where: { username: 'RavenAdmin' },
     update: {
       password: adminHashedPassword, // Actualiza a la versión encriptada si ya existe
+      email: 'kevin2.0bx@gmail.com',
     },
     create: {
       username: 'RavenAdmin',
@@ -153,6 +154,7 @@ async function main() {
       rol_id: rolAdmin!.id,
       empleado_id: empleadoAdmin.id,
       registro_completo: true,
+      email: 'kevin2.0bx@gmail.com',
     },
   });
 

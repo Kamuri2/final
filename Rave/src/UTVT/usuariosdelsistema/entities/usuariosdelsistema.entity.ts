@@ -1,5 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Alumno } from '../../alumnos/entities/alumno.entity'; // 👈 Importamos la entidad Alumno
+import { Alumno } from '../../alumnos/entities/alumno.entity'; 
 
 @ObjectType()
 export class UsuarioSistema {
@@ -9,19 +9,24 @@ export class UsuarioSistema {
   @Field()
   username: string;
 
+  // 📧 NUEVO: El correo electrónico (Obligatorio para recuperar cuenta)
+  @Field()
+  email: string;
+
   @Field(() => Boolean)
   registro_completo: boolean;
 
-  // 🆔 Guardamos el ID del vínculo por si lo necesitas
   @Field(() => Int, { nullable: true })
   alumno_id?: number;
 
-  // 🛡️ RELACIÓN REAL: 
-  // A través de este objeto "alumnos", tu app podrá leer:
-  // usuario.alumnos.carrera, usuario.alumnos.semestre, etc.
   @Field(() => Alumno, { nullable: true })
   alumnos?: Alumno; 
 
-  // ⚠️ NOTA: Los campos carrera, semestre y matricula NO van aquí.
-  // Van dentro de la entidad 'Alumno'. 
+  // 🔐 NUEVOS: Campos para el PIN de recuperación
+  // Los marcamos como nullable: true porque la mayor parte del tiempo estarán vacíos
+  @Field({ nullable: true })
+  reset_pin?: string;
+
+  @Field({ nullable: true })
+  reset_pin_expira?: Date;
 }

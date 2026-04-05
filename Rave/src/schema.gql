@@ -37,6 +37,7 @@ input CreateCredencialeInput {
   empleado_id: Int
   estado: String! = "ACTIVA"
   qr_hash: String!
+  usuario_id: Int!
   vencimiento: DateTime!
 }
 
@@ -97,6 +98,7 @@ input CreateSancionInput {
 
 input CreateUsuarioSistemaInput {
   carrera: String
+  email: String!
   grupo_id: Int
   matricula: String
   nombre_completo: String
@@ -116,9 +118,11 @@ input CreateVisitanteInput {
 type Credenciale {
   alumno_id: Int
   alumnos: Alumno
+  empleado_id: Int
   estado: String!
   id: Int!
   qr_hash: String!
+  usuario_id: Int!
   vencimiento: DateTime!
 }
 
@@ -177,6 +181,7 @@ type Mutation {
   createRole(createRoleInput: CreateRoleInput!): Role!
   createSancion(createSancionInput: CreateSancionInput!): Sancion!
   createVisitante(createVisitanteInput: CreateVisitanteInput!): Visitante!
+  generarCredencial(usuarioId: Int!): Credenciale!
   login(password: String!, username: String!): LoginResponse!
   registrarAlumno(input: CreateUsuarioSistemaInput!): UsuarioSistema!
   removeAlumno(id: Int!): Alumno!
@@ -192,6 +197,8 @@ type Mutation {
   removeRole(id: Int!): Role!
   removeSancion(id: Int!): Sancion!
   removeVisitante(id: Int!): Visitante!
+  resetearPasswordConPin(email: String!, nuevaPassword: String!, pin: String!): String!
+  solicitarRecuperacionPassword(email: String!): String!
   updateAlumno(updateAlumnoInput: UpdateAlumnoInput!): Alumno!
   updateCarrera(updateCarreraInput: UpdateCarreraInput!): Carrera!
   updateCredenciale(updateCredencialeInput: UpdateCredencialeInput!): Credenciale!
@@ -297,6 +304,7 @@ input UpdateCredencialeInput {
   estado: String = "ACTIVA"
   id: Int!
   qr_hash: String
+  usuario_id: Int
   vencimiento: DateTime
 }
 
@@ -366,6 +374,7 @@ input UpdateSancionInput {
 
 input UpdateUsuarioSistemaInput {
   carrera: String
+  email: String
   grupo_id: Int
   id: Int!
   matricula: String
@@ -387,8 +396,11 @@ input UpdateVisitanteInput {
 type UsuarioSistema {
   alumno_id: Int
   alumnos: Alumno
+  email: String!
   id: Int!
   registro_completo: Boolean!
+  reset_pin: String
+  reset_pin_expira: DateTime
   username: String!
 }
 

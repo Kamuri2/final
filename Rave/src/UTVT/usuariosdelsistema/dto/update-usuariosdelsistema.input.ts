@@ -1,11 +1,10 @@
 import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 import { CreateUsuarioSistemaInput } from './create-usuariosdelsistema.input';
-import { IsNotEmpty, IsInt, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsInt, IsOptional, IsString, IsBoolean, IsEmail } from 'class-validator';
 
 @InputType()
 export class UpdateUsuarioSistemaInput extends PartialType(CreateUsuarioSistemaInput) {
   
-  // 🆔 El ID es OBLIGATORIO para saber a quién actualizar
   @Field(() => Int)
   @IsNotEmpty()
   @IsInt()
@@ -31,7 +30,6 @@ export class UpdateUsuarioSistemaInput extends PartialType(CreateUsuarioSistemaI
   @IsInt()
   semestre?: number;
 
-  // 🏫 AUTORIZADO: Ahora sí, el pasaporte para el grupo está sellado
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()
@@ -41,4 +39,10 @@ export class UpdateUsuarioSistemaInput extends PartialType(CreateUsuarioSistemaI
   @IsOptional()
   @IsBoolean()
   registro_completo?: boolean;
+
+  // 📧 Validación agregada para el email
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsEmail({}, { message: 'El formato del correo es inválido' })
+  email?: string;
 }

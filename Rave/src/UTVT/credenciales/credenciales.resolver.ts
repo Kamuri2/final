@@ -8,10 +8,22 @@ import { UpdateCredencialeInput } from './dto/update-credenciale.input';
 export class CredencialesResolver {
   constructor(private readonly credencialesService: CredencialesService) {}
 
-  @Mutation(() => Credenciale)
-  createCredenciale(@Args('createCredencialeInput') data: CreateCredencialeInput) {
-    return this.credencialesService.create(data);
+  // 🔥 MUTATION MAESTRA: Genera 1 solo QR real y borra los viejos en la DB
+  @Mutation(() => Credenciale, { name: 'generarCredencial' })
+  async generarCredencial(
+    @Args('usuarioId', { type: () => Int }) usuarioId: number
+  ) {
+    // Aquí disparamos la lógica de: Borrar previos -> Crear nuevo -> Devolver Hash
+    return await this.credencialesService.generarCredencialReal(usuarioId);
   }
+
+  // 🛡️ CONSULTA PARA EL GUARDIA: Valida si el QR existe y a quién pertenece
+  @Query(() => Credenciale, { name: 'validarQR', nullable: true })
+  async validarQR(@Args('qr_hash', { type: () => String }) qr_hash: string) {
+    return await this.credencialesService.findByHash(qr_hash);
+  }
+
+  // --- MÉTODOS ADMINISTRATIVOS (CRUD) ---
 
   @Query(() => [Credenciale], { name: 'credenciales' })
   findAll() {
@@ -23,10 +35,9 @@ export class CredencialesResolver {
     return this.credencialesService.findOne(id);
   }
 
-  // Nueva consulta para que la app valide el QR
-  @Query(() => Credenciale, { name: 'validarQR', nullable: true })
-  validarQR(@Args('qr_hash', { type: () => String }) qr_hash: string) {
-    return this.credencialesService.findByHash(qr_hash);
+  @Mutation(() => Credenciale)
+  createCredenciale(@Args('createCredencialeInput') data: CreateCredencialeInput) {
+    return this.credencialesService.create(data);
   }
 
   @Mutation(() => Credenciale)

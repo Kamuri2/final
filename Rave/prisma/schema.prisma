@@ -31,10 +31,15 @@ model carreras {
 model credenciales {
   id               Int                @id @default(autoincrement())
   qr_hash          String             @unique @db.VarChar(255)
-  vencimiento      DateTime           @db.Date
+  vencimiento      DateTime           // 🛡️ DateTime completo para expirar en segundos
   estado           String             @default("ACTIVA") @db.VarChar(50)
   alumno_id        Int?
   empleado_id      Int?
+  
+  // 🛡️ CAMBIO CLAVE: Quitamos el '?' para que sea obligatorio. 
+  // Esto hace que el UPSERT sea 100% infalible.
+  usuario_id       Int                @unique 
+
   alumnos          alumnos?           @relation(fields: [alumno_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   empleados        empleados?         @relation(fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   registros_acceso registros_acceso[]
@@ -131,6 +136,9 @@ model usuarios_sistema {
   alumno_id         Int?               
   empleado_id       Int?               
   visitante_id      Int?      
+  email             String    @unique @db.VarChar(100)
+  reset_pin         String?   @db.VarChar(6)
+  reset_pin_expira  DateTime?
   grupo_id          Int?               
   pases_visita      pases_visita[]
   registros_acceso  registros_acceso[]

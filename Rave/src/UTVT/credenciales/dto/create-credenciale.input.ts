@@ -24,4 +24,10 @@ export class CreateCredencialeInput {
   @Field(() => Int, { nullable: true })
   @IsOptional()
   empleado_id?: number;
+
+  @Field(() => Int)
+  @IsNotEmpty()
+  usuario_id: number;
+
+  
 }

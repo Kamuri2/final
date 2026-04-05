@@ -2,7 +2,7 @@ import { Resolver, Query, Mutation, Args, Int, ObjectType, Field } from '@nestjs
 import { UsuarioSistemaService } from './usuariosdelsistema.service';
 import { UsuarioSistema } from './entities/usuariosdelsistema.entity';
 import { CreateUsuarioSistemaInput } from './dto/create-usuariosdelsistema.input';
-import { UpdateUsuarioSistemaInput } from './dto/update-usuariosdelsistema.input'; // 👈 EL IMPORT QUE FALTABA
+import { UpdateUsuarioSistemaInput } from './dto/update-usuariosdelsistema.input'; 
 import { SetMetadata } from '@nestjs/common';
 
 export const Public = () => SetMetadata('isPublic', true);
@@ -43,8 +43,6 @@ export class UsuariosSistemaResolver {
   }
 
   // 3. ACTUALIZACIÓN DE FICHA / FORMULARIO (Real)
-  // Nota: Si usas seguridad JWT, quita el @Public(). 
-  // Si aún estás probando sin tokens, déjalo puesto.
   @Public() 
   @Mutation(() => UsuarioSistema)
   async actualizarAlumno(
@@ -54,10 +52,31 @@ export class UsuariosSistemaResolver {
     return this.usuariosService.update(id, input);
   }
 
-  // En el servidor NestJS (Machenike)
-@Query(() => UsuarioSistema, { name: 'getUsuarioStatus' }) // 👈 EL NOMBRE TIENE QUE SER ESTE
-findOne(@Args('id', { type: () => Int }) id: number) {
-  return this.usuariosService.findOne(id);
-}
-}
+  // 4. ESTADO DEL USUARIO (Para el Home)
+  @Query(() => UsuarioSistema, { name: 'getUsuarioStatus' }) 
+  findOne(@Args('id', { type: () => Int }) id: number) {
+    return this.usuariosService.findOne(id);
+  }
 
+  // =========================================================================
+  // 🔥 5. RECUPERACIÓN DE CONTRASEÑA (Público)
+  // =========================================================================
+
+  @Public()
+  @Mutation(() => String, { name: 'solicitarRecuperacionPassword' })
+  async solicitarRecuperacionPassword(
+    @Args('email', { type: () => String }) email: string
+  ) {
+    return this.usuariosService.solicitarRecuperacion(email);
+  }
+
+  @Public()
+  @Mutation(() => String, { name: 'resetearPasswordConPin' })
+  async resetearPasswordConPin(
+    @Args('email', { type: () => String }) email: string,
+    @Args('pin', { type: () => String }) pin: string,
+    @Args('nuevaPassword', { type: () => String }) nuevaPassword: string
+  ) {
+    return this.usuariosService.resetearPasswordConPin(email, pin, nuevaPassword);
+  }
+}

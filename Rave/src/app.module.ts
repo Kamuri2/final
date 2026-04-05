@@ -20,9 +20,14 @@ import { PuntosAccesoModule } from './UTVT/puntosacceso/puntosacceso.module';
 import { PasesVisitaModule } from './UTVT/pasesvisita/pasesvisita.module';
 import { RegistrosaccesoModule } from './UTVT/registrosacceso/registrosacceso.module';
 import { PrismaModule } from './UTVT/prisma/prisma.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(), // 👈 Activa el reloj de tareas
+    // ... tus otros módulo
+  
+
     //ConfigModule debe ir aquí, al mismo nivel que los demás
     ConfigModule.forRoot({
       isGlobal: true, 
