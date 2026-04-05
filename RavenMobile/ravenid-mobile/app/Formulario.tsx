@@ -1,8 +1,23 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState, useMemo } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    Dimensions,
+    Platform
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useTheme } from '../context/ThemeContext';
+
+const { width } = Dimensions.get('window');
+const normalize = (size: number) => Math.round((width / 375) * size);
 
 const GET_CARRERAS = gql`
   query GetCarreras {
@@ -14,7 +29,7 @@ const GET_CARRERAS = gql`
   }
 `;
 
-const ACTUALIZAR_ALUMNO = gql`
+const ACTUALIZAR = gql`
   mutation Actualizar($id: Int!, $input: UpdateUsuarioSistemaInput!) {
     actualizarAlumno(id: $id, input: $input) {
       id
@@ -24,42 +39,44 @@ const ACTUALIZAR_ALUMNO = gql`
 `;
 
 export default function Formulario() {
+    const { theme, isDarkMode } = useTheme();
     const { id } = useLocalSearchParams();
     const userId = id ? parseInt(id as string) : null;
 
+    // --- CAMPOS ---
     const [nombre, setNombre] = useState('');
     const [matricula, setMatricula] = useState('');
     const [semestre, setSemestre] = useState('');
     const [carreraId, setCarreraId] = useState('');
     const [grupoId, setGrupoId] = useState('');
 
-    const { data, loading, error } = useQuery(GET_CARRERAS, { fetchPolicy: 'network-only' });
-    const [actualizar, { loading: guardando }] = useMutation(ACTUALIZAR_ALUMNO);
+    const { data, loading, error } = useQuery(GET_CARRERAS, { fetchPolicy: 'cache-and-network' });
+    const [actualizar, { loading: guardando }] = useMutation(ACTUALIZAR);
 
-    // 🛡️ ESCUDO 1: Si no hay ID, no renderizamos nada pesado
-    if (!userId) {
-        return <View style={styles.center}><Text>Error: Sesión inválida. Reingresa.</Text></View>;
-    }
-
+    // 🛡️ BLINDAJE: Cálculo seguro de carrera y grupos
     const carreraActual = useMemo(() => {
-        if (!data?.carreras || !carreraId) return null;
+        if (!data?.carreras) return null;
         return data.carreras.find((c: any) => String(c.id) === String(carreraId)) || null;
     }, [data, carreraId]);
 
     const grupos = carreraActual?.grupos || [];
 
-    const manejarGuardar = async () => {
-        const semInt = parseInt(semestre);
-        const grpInt = parseInt(grupoId);
+    // 🛡️ FIX DEFINITIVO DE VISIBILIDAD: Hardcoded hex strings
+    const TEXT_COLOR = isDarkMode ? '#FFFFFF' : '#1B1411';
+    const PICKER_BG = isDarkMode ? '#1A1A1A' : '#F9F9F9';
 
-        if (!nombre.trim() || !matricula.trim() || isNaN(semInt) || isNaN(grpInt)) {
-            Alert.alert("Aviso", "Completa todos los campos, incluyendo el grupo.");
+    const guardar = async () => {
+        // Validación de seguridad antes de enviar
+        const sInt = parseInt(semestre);
+        const gInt = parseInt(grupoId);
+
+        if (!userId || !nombre.trim() || !matricula.trim() || isNaN(sInt) || isNaN(gInt)) {
+            Alert.alert("Aviso", "Por favor completa todos los campos correctamente.");
             return;
         }
 
         try {
-            // 🛡️ ESCUDO 2: Optional Chaining en la respuesta para evitar el cierre (crash)
-            const respuesta = await actualizar({
+            const res = await actualizar({
                 variables: {
                     id: userId,
                     input: {
@@ -67,84 +84,109 @@ export default function Formulario() {
                         nombre_completo: nombre.trim(),
                         matricula: matricula.trim(),
                         carrera: carreraActual?.nombre || '',
-                        semestre: semInt,
-                        grupo_id: grpInt,
+                        semestre: sInt,
+                        grupo_id: gInt,
                         registro_completo: true
                     }
-                },
-                refetchQueries: ['GetUsuarioActual']
+                }
             });
 
-            if (respuesta?.data?.actualizarAlumno) {
-                Alert.alert("¡Éxito!", "Datos guardados.", [{ text: "OK", onPress: () => router.replace({ pathname: '/Home', params: { id: userId } }) }]);
+            if (res?.data) {
+                Alert.alert("Éxito", "Registro actualizado en la Machenike.", [
+                    { text: "OK", onPress: () => router.replace({ pathname: '/Home', params: { id: userId } }) }
+                ]);
             }
         } catch (e: any) {
-            // 🛡️ ESCUDO 3: Atrapamos el error aquí para que Expo NO se cierre
-            console.log("Error detectado:", e);
-
-            // Si el error dice "property grupo_id should not exist", es el DTO de la laptop
-            const esErrorDto = e.message.includes("grupo_id") || JSON.stringify(e).includes("grupo_id");
-
-            Alert.alert(
-                "El servidor rechazó los datos",
-                esErrorDto
-                    ? "El campo 'grupo_id' no está autorizado en NestJS. Revisa el DTO en tu laptop."
-                    : "Error de servidor: " + e.message
-            );
+            Alert.alert("Error de Servidor", "No se pudo guardar. Revisa la conexión con tu laptop.");
         }
     };
 
-    if (loading && !data) return <View style={styles.center}><ActivityIndicator size="large" color="#88B04B" /></View>;
+    if (loading && !data) return <View style={[styles.center, { backgroundColor: theme.bg }]}><ActivityIndicator color={theme.primary} size="large" /></View>;
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Registro RavenID</Text>
-            <View style={styles.card}>
-                <Text style={styles.label}>Nombre</Text>
-                <TextInput style={styles.input} value={nombre} onChangeText={setNombre} />
+        <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={styles.container}>
+            <Text style={[styles.title, { color: theme.text }]}>DATOS DEL ALUMNO</Text>
 
-                <Text style={styles.label}>Matrícula</Text>
-                <TextInput style={styles.input} value={matricula} onChangeText={setMatricula} keyboardType="numeric" />
+            <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+                <Text style={[styles.label, { color: theme.subtext }]}>NOMBRE COMPLETO</Text>
+                <TextInput
+                    style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.bg }]}
+                    value={nombre}
+                    onChangeText={setNombre}
+                    placeholder="Escribe tu nombre"
+                    placeholderTextColor={theme.subtext}
+                />
 
-                <Text style={styles.label}>Semestre</Text>
-                <TextInput style={styles.input} value={semestre} onChangeText={setSemestre} keyboardType="numeric" />
+                <Text style={[styles.label, { color: theme.subtext }]}>MATRÍCULA</Text>
+                <TextInput
+                    style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.bg }]}
+                    value={matricula}
+                    onChangeText={setMatricula}
+                    keyboardType="numeric"
+                />
 
-                <Text style={styles.label}>Carrera</Text>
-                <View style={styles.pickerBox}>
-                    <Picker selectedValue={carreraId} onValueChange={(v) => { setCarreraId(v); setGrupoId(''); }}>
-                        <Picker.Item label="Selecciona Carrera" value="" />
-                        {data?.carreras?.map((c: any) => <Picker.Item key={c.id} label={c.nombre} value={String(c.id)} />)}
+                <Text style={[styles.label, { color: theme.subtext }]}>SEMESTRE</Text>
+                <TextInput
+                    style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.bg }]}
+                    value={semestre}
+                    onChangeText={setSemestre}
+                    keyboardType="numeric"
+                />
+
+                <Text style={[styles.label, { color: theme.subtext }]}>CARRERA ACADÉMICA</Text>
+                <View style={[styles.pickerWrapper, { backgroundColor: PICKER_BG, borderColor: theme.border }]}>
+                    <Picker
+                        key={`picker-carrera-${isDarkMode}`} // 👈 EL TRUCO: Fuerza el re-render para ver las letras
+                        selectedValue={carreraId}
+                        onValueChange={(v) => { setCarreraId(v); setGrupoId(''); }}
+                        style={{ color: TEXT_COLOR }}
+                        dropdownIconColor={theme.primary}
+                        mode="dropdown"
+                    >
+                        <Picker.Item label="-- Selecciona --" value="" color={theme.subtext} />
+                        {data?.carreras?.map((c: any) => (
+                            <Picker.Item key={c.id} label={c.nombre} value={String(c.id)} color={TEXT_COLOR} />
+                        ))}
                     </Picker>
                 </View>
 
                 {carreraId !== '' && (
                     <>
-                        <Text style={styles.label}>Grupo</Text>
-                        <View style={styles.pickerBox}>
-                            <Picker selectedValue={grupoId} onValueChange={setGrupoId}>
-                                <Picker.Item label="Selecciona Grupo" value="" />
-                                {grupos.map((g: any) => <Picker.Item key={g.id} label={g.nombre} value={String(g.id)} />)}
+                        <Text style={[styles.label, { color: theme.subtext }]}>GRUPO</Text>
+                        <View style={[styles.pickerWrapper, { backgroundColor: PICKER_BG, borderColor: theme.border }]}>
+                            <Picker
+                                key={`picker-grupo-${isDarkMode}`} // 👈 Fuerza el refresco del color
+                                selectedValue={grupoId}
+                                onValueChange={setGrupoId}
+                                style={{ color: TEXT_COLOR }}
+                                dropdownIconColor={theme.primary}
+                                mode="dropdown"
+                            >
+                                <Picker.Item label="-- Selecciona --" value="" color={theme.subtext} />
+                                {grupos.map((g: any) => (
+                                    <Picker.Item key={g.id} label={g.nombre} value={String(g.id)} color={TEXT_COLOR} />
+                                ))}
                             </Picker>
                         </View>
                     </>
                 )}
             </View>
 
-            <TouchableOpacity style={styles.btn} onPress={manejarGuardar} disabled={guardando}>
-                {guardando ? <ActivityIndicator color="#FFF" /> : <Text style={styles.btnText}>GUARDAR REGISTRO</Text>}
+            <TouchableOpacity style={[styles.btn, { backgroundColor: theme.primary }]} onPress={guardar} disabled={guardando}>
+                {guardando ? <ActivityIndicator color="#FFF" /> : <Text style={styles.btnText}>FINALIZAR REGISTRO</Text>}
             </TouchableOpacity>
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { padding: 25, paddingTop: 60, backgroundColor: '#FEFDF5', flexGrow: 1 },
+    container: { padding: normalize(25), paddingTop: normalize(50), flexGrow: 1 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    card: { backgroundColor: '#FFF', padding: 20, borderRadius: 15, elevation: 4 },
-    title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-    label: { fontSize: 12, fontWeight: 'bold', marginTop: 10, color: '#666' },
-    input: { backgroundColor: '#F9F9F9', padding: 15, borderRadius: 10, borderWidth: 1, borderColor: '#EEE' },
-    pickerBox: { backgroundColor: '#F9F9F9', borderRadius: 10, borderWidth: 1, borderColor: '#EEE', overflow: 'hidden', marginTop: 5 },
-    btn: { backgroundColor: '#88B04B', padding: 20, borderRadius: 12, marginTop: 25, alignItems: 'center' },
-    btnText: { color: '#FFF', fontWeight: 'bold' }
+    title: { fontSize: normalize(22), fontWeight: '900', textAlign: 'center', marginBottom: 25 },
+    card: { padding: 20, borderRadius: 25, borderWidth: 1, elevation: 5 },
+    label: { fontSize: 10, fontWeight: 'bold', marginTop: 15, marginBottom: 5 },
+    input: { padding: 12, borderRadius: 10, borderWidth: 1, fontSize: 16 },
+    pickerWrapper: { borderRadius: 12, borderWidth: 1, marginTop: 5, overflow: 'hidden' },
+    btn: { padding: 18, borderRadius: 15, marginTop: 35, alignItems: 'center', elevation: 5 },
+    btnText: { color: '#FFF', fontWeight: 'bold', letterSpacing: 1 }
 });

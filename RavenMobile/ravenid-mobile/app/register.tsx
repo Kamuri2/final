@@ -1,111 +1,127 @@
 import { gql, useMutation } from '@apollo/client';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Dimensions } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
-const REGISTRAR_ALUMNO = gql`
-  mutation Registrar($input: CreateUsuarioSistemaInput!) {
-    registrarAlumno(input: $input) {
-      id
-      username
-    }
+const { width } = Dimensions.get('window');
+const normalize = (size: number) => Math.round((width / 375) * size);
+
+// 1. Mutation actualizada con el campo email
+const REGISTRAR = gql`
+  mutation Registrar($input: CreateUsuarioSistemaInput!) { 
+    registrarAlumno(input: $input) { 
+      id 
+    } 
   }
 `;
 
 export default function RegisterScreen() {
+    const { theme } = useTheme();
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState(''); // 👈 NUEVO ESTADO
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-
-    const [registrar, { loading }] = useMutation(REGISTRAR_ALUMNO, {
-        onCompleted: () => {
-            // ✅ Mensaje de éxito solicitado
-            Alert.alert('¡Éxito!', 'Registrado con éxito. Ya puedes iniciar sesión.');
-            router.replace('/');
-        },
-        onError: (error) => {
-            console.log("Error detallado:", JSON.stringify(error, null, 2));
-
-            // 🔍 Detectamos si es un error de usuario duplicado (Unique Constraint)
-            if (error.message.includes('Unique constraint') || error.message.includes('already exists')) {
-                Alert.alert('Usuario Duplicado', 'El nombre de usuario "' + username + '" ya está registrado. Intenta con otro.');
-            } else {
-                Alert.alert('Error', 'No se pudo conectar con el servidor.');
-            }
-        }
-    });
+    const [confirm, setConfirm] = useState('');
+    const [registrar, { loading }] = useMutation(REGISTRAR);
 
     const ejecutarRegistro = async () => {
-        if (!username || !password || !confirmPassword) {
-            Alert.alert('Aviso', 'Por favor llena todos los campos.');
-            return;
+        // 2. Validación de datos incluyendo email
+        if (!username.trim() || !email.trim() || password.length < 4) {
+            return Alert.alert('Aviso', 'Por favor, llena todos los campos.');
         }
 
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Las contraseñas no coinciden.');
-            return;
+        // Validación básica de formato de correo
+        if (!email.includes('@')) {
+            return Alert.alert('Error', 'Ingresa un correo electrónico válido.');
+        }
+
+        if (password !== confirm) {
+            return Alert.alert('Error', 'Las contraseñas no coinciden.');
         }
 
         try {
-            await registrar({
+            // 3. Enviar email al backend
+            const { data } = await registrar({
                 variables: {
                     input: {
                         username: username.trim(),
-                        password: password,
+                        email: email.trim().toLowerCase(), // 👈 SE AGREGA EMAIL
+                        password,
                         rol_id: 2
                     }
                 }
             });
-        } catch (e) {
-            // El manejo se hace en onError
+
+            if (data?.registrarAlumno?.id) {
+                Alert.alert('¡Éxito!', 'Cuenta creada correctamente.', [{ text: 'OK', onPress: () => router.replace('/') }]);
+            }
+        } catch (e: any) {
+            // Manejo de errores específicos
+            let msg = 'Fallo en el servidor';
+            if (e.message.includes('Unique constraint')) {
+                msg = e.message.includes('username') ? 'Esta matrícula ya existe' : 'Este correo ya está registrado';
+            }
+            Alert.alert('Error', msg);
         }
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.headerContainer}>
-                <Text style={styles.japaneseText}>新規登録</Text>
-                <Text style={styles.mainTitle}>RAVEN ID</Text>
-                <Text style={styles.subtitle}>Crear Cuenta de Alumno</Text>
+        <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={styles.container}>
+            <View style={styles.header}>
+                <Text style={[styles.japanese, { color: theme.primary }]}>新規登録</Text>
+                <Text style={[styles.title, { color: theme.text }]}>REGISTRO</Text>
             </View>
 
-            <View style={styles.formCard}>
-                <Text style={styles.inputLabel}>Nombre de Usuario</Text>
+            <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+
+                <Text style={[styles.label, { color: theme.subtext }]}>USUARIO</Text>
                 <TextInput
-                    style={styles.styledInput}
-                    placeholder="Ej: A01234567"
-                    placeholderTextColor="#9E9E9E"
+                    style={[styles.input, { color: theme.text, borderColor: theme.border }]}
                     value={username}
                     onChangeText={setUsername}
                     autoCapitalize="none"
+                    placeholder="ejemploUser"
+                    placeholderTextColor={theme.subtext + '80'}
                 />
 
-                <Text style={styles.inputLabel}>Contraseña</Text>
+                {/* 4. NUEVO CAMPO DE EMAIL */}
+                <Text style={[styles.label, { color: theme.subtext }]}>CORREO INSTITUCIONAL</Text>
                 <TextInput
-                    style={styles.styledInput}
-                    placeholder="Crea una contraseña"
-                    placeholderTextColor="#9E9E9E"
+                    style={[styles.input, { color: theme.text, borderColor: theme.border }]}
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    placeholder="ejemplo@utvt.edu.mx"
+                    placeholderTextColor={theme.subtext + '80'}
+                />
+
+                <Text style={[styles.label, { color: theme.subtext }]}>CONTRASEÑA</Text>
+                <TextInput
+                    style={[styles.input, { color: theme.text, borderColor: theme.border }]}
                     secureTextEntry
                     value={password}
                     onChangeText={setPassword}
+                    placeholder="••••••••"
+                    placeholderTextColor={theme.subtext + '80'}
                 />
 
-                <Text style={styles.inputLabel}>Confirmar Contraseña</Text>
+                <Text style={[styles.label, { color: theme.subtext }]}>CONFIRMAR</Text>
                 <TextInput
-                    style={styles.styledInput}
-                    placeholder="Repite tu contraseña"
-                    placeholderTextColor="#9E9E9E"
+                    style={[styles.input, { color: theme.text, borderColor: theme.border }]}
                     secureTextEntry
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
+                    value={confirm}
+                    onChangeText={setConfirm}
+                    placeholder="••••••••"
+                    placeholderTextColor={theme.subtext + '80'}
                 />
 
-                <TouchableOpacity onPress={ejecutarRegistro} disabled={loading} style={styles.mainButton}>
-                    {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.mainButtonText}>REGISTRARSE</Text>}
+                <TouchableOpacity style={[styles.btn, { backgroundColor: theme.primary }]} onPress={ejecutarRegistro} disabled={loading}>
+                    {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.btnText}>CREAR CUENTA</Text>}
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.back()} style={styles.backLink}>
-                    <Text style={styles.backLinkText}>¿Ya tienes cuenta? <Text style={styles.backLinkTextBold}>Inicia sesión</Text></Text>
+                <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 15 }}>
+                    <Text style={{ color: theme.subtext, textAlign: 'center', fontSize: 12 }}>Volver</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
@@ -113,42 +129,13 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flexGrow: 1, backgroundColor: '#FEFDF5', justifyContent: 'center', padding: 25 },
-    headerContainer: { alignItems: 'center', marginBottom: 30 },
-    japaneseText: { color: '#88B04B', fontSize: 14, letterSpacing: 6, marginBottom: 5, fontWeight: '600' },
-    mainTitle: { color: '#4A4A4A', fontSize: 40, fontWeight: 'bold', letterSpacing: 2 },
-    subtitle: { color: '#9E9E9E', fontSize: 16, marginTop: 5 },
-    formCard: {
-        backgroundColor: '#FFFFFF',
-        padding: 30,
-        borderRadius: 30,
-        elevation: 8,
-        shadowColor: '#C1E1C1',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.2,
-        shadowRadius: 15,
-    },
-    inputLabel: { color: '#4A4A4A', fontSize: 14, fontWeight: '600', marginBottom: 8, marginLeft: 5 },
-    styledInput: {
-        backgroundColor: '#F9F9F9',
-        color: '#4A4A4A',
-        padding: 16,
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        marginBottom: 20,
-        fontSize: 16
-    },
-    mainButton: {
-        backgroundColor: '#C1E1C1',
-        padding: 18,
-        borderRadius: 20,
-        alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 20,
-    },
-    mainButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 18, letterSpacing: 1 },
-    backLink: { alignItems: 'center' },
-    backLinkText: { color: '#9E9E9E', fontSize: 14 },
-    backLinkTextBold: { color: '#88B04B', fontWeight: 'bold' },
+    container: { padding: normalize(30), flexGrow: 1, justifyContent: 'center' },
+    header: { alignItems: 'center', marginBottom: 30 },
+    japanese: { fontSize: 12, letterSpacing: 10, fontWeight: 'bold' },
+    title: { fontSize: 32, fontWeight: '900' },
+    card: { padding: 30, borderRadius: 25, borderWidth: 1, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+    label: { fontSize: 10, fontWeight: 'bold', marginBottom: 5 },
+    input: { borderBottomWidth: 1, padding: 10, marginBottom: 20, fontSize: 16 },
+    btn: { padding: 18, borderRadius: 15, alignItems: 'center', marginTop: 10 },
+    btnText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 }
 });
