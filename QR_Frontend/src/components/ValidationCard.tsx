@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 
 interface ValidationCardProps {
   children: ReactNode;
+  className?: string;
 }
 
 const ValidationCard = ({ children }: ValidationCardProps) => {

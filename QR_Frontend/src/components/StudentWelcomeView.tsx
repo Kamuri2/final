@@ -11,7 +11,7 @@ export interface StudentData {
   matricula: string;
   carrera: string;
   semestre: number;
-  activo: boolean;
+  activo: boolean; // 🛡️ Lo dejaremos como boolean para el Badge
   turno: string;
   fechaIngreso: string;
 }
