@@ -71,7 +71,7 @@ export default function LoginScreen() {
             style={styles.logoImage}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>BIENVENIDO</Text>
+          <Text style={styles.headerTitle}></Text>
         </View>
       </View>
 
@@ -130,17 +130,17 @@ const styles = StyleSheet.create({
   diagonalWrapper: { position: 'absolute', top: 0, width: width, height: height * 0.45, zIndex: 0 },
   diagonalShape: { position: 'absolute', top: -height * 0.15, left: -width * 0.2, width: width * 1.5, height: height * 0.5, backgroundColor: '#B08D6D', transform: [{ rotate: '-12deg' }] },
   headerTextContainer: { position: 'absolute', top: height * 0.05, width: width, alignItems: 'center' }, // 👈 Ajustado el 'top' para que quepa el logo
-  logoImage: { width: normalize(160), height: normalize(160), marginBottom: -10 }, // 👈 Estilo del Logo
-  headerTitle: { fontSize: normalize(32), fontWeight: '900', color: '#FFF', letterSpacing: 8 },
+  logoImage: { width: normalize(300), height: normalize(300), marginBottom: -10 }, // 👈 Estilo del Logo
+  headerTitle: { fontSize: normalize(21), fontWeight: '900', color: '#FFF', letterSpacing: 8 },
   topSpacer: { height: height * 0.38 },
   inputGroup: { marginBottom: 15 },
-  inputTitle: { fontSize: 9, fontWeight: '700', marginBottom: 8, letterSpacing: 2 },
+  inputTitle: { fontSize: 9, fontWeight: '700', marginBottom: 20, letterSpacing: 2 },
   inputBlock: { padding: normalize(15), borderRadius: 8, fontSize: 16, borderLeftWidth: 3, borderLeftColor: '#B08D6D' },
-  forgotBtn: { alignSelf: 'flex-end', marginBottom: 20 },
+  forgotBtn: { alignSelf: 'flex-end', marginBottom: 40 },
   forgotText: { fontSize: 9, letterSpacing: 1 },
   mainBtn: { backgroundColor: '#B08D6D', padding: normalize(18), borderRadius: 8, alignItems: 'center', elevation: 10 },
   mainBtnText: { color: '#FFF', fontWeight: '900', letterSpacing: 2 },
-  footerBtn: { marginTop: 25, alignItems: 'center' },
+  footerBtn: { marginTop: 70, alignItems: 'center' },
   footerText: { fontSize: 10, letterSpacing: 1 },
   accentText: { color: '#B08D6D', fontWeight: 'bold' },
   premiumSheet: { position: 'absolute', bottom: 0, width: width, backgroundColor: '#F2E7D5', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingTop: 15, paddingBottom: Platform.OS === 'ios' ? 60 : 40, minHeight: height * 0.18, alignItems: 'center', zIndex: 9999, borderTopWidth: 2, elevation: 25 },

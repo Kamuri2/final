@@ -50,7 +50,7 @@ export default function HomeScreen() {
         variables: { id: userId || 0 },
         skip: !userId,
         fetchPolicy: 'cache-and-network',
-        pollInterval: 5000,
+        //pollInterval: 5000,
     });
 
     const [crearCredencial] = useMutation(GENERAR_QR);
