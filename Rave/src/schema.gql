@@ -212,6 +212,7 @@ type Mutation {
   updateRole(updateRoleInput: UpdateRoleInput!): Role!
   updateSancion(updateSancionInput: UpdateSancionInput!): Sancion!
   updateVisitante(updateVisitanteInput: UpdateVisitanteInput!): Visitante!
+  validarAcceso(puntoId: Int!, qr_hash: String!, verificadorId: Int!): ValidacionResult!
 }
 
 type PaseVisita {
@@ -402,6 +403,12 @@ type UsuarioSistema {
   reset_pin: String
   reset_pin_expira: DateTime
   username: String!
+}
+
+type ValidacionResult {
+  alumno: Alumno
+  mensaje: String!
+  valido: Boolean!
 }
 
 type Visitante {

@@ -5,28 +5,32 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 🛡️ CONFIGURACIÓN CORS TOTAL
-  // Esto soluciona el problema de que no aparezcan los requests en web
+  // 🛡️ CONFIGURACIÓN CORS BLINDADA
   app.enableCors({
-    origin: true, // Permite que tu App (web o móvil) se conecte
+    // En producción, solo permite tus dominios de la UTVT
+    origin: process.env.NODE_ENV === 'production' 
+      ? ['https://fraktalid.utvt.cloud', 'https://web-fraktalid.utvt.cloud'] 
+      : true, 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With', // Cabeceras necesarias para GraphQL
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
   });
 
-  // Validación de datos global
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,
   }));
 
-  // 🚀 Escuchar en 0.0.0.0 es vital para que el celular vea a la Machenike
-  await app.listen(3000, '0.0.0.0'); 
+  // 🚀 El puerto ahora es inteligente
+  const port = process.env.PORT || 3000;
+  
+  // En producción no siempre es necesario el '0.0.0.0', 
+  // pero dejarlo no hace daño en la mayoría de los VPS
+  await app.listen(port, '0.0.0.0'); 
 
   console.log(`--- RAVEN ID BACKEND ---`);
-  console.log(`🚀 Servidor corriendo en puerto 3000`);
-  console.log(`🔗 Local: http://localhost:3000/graphql`);
-  console.log(`📶 Red: http://0.0.0.0:3000/graphql`);
+  console.log(`🚀 Servidor corriendo en puerto ${port}`);
+  console.log(`🌍 Modo: ${process.env.NODE_ENV || 'development'}`);
 }
 bootstrap();

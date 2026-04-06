@@ -3,6 +3,7 @@ import { CredencialesService } from './credenciales.service';
 import { Credenciale } from './entities/credenciale.entity';
 import { CreateCredencialeInput } from './dto/create-credenciale.input';
 import { UpdateCredencialeInput } from './dto/update-credenciale.input';
+import { ValidacionResult } from './dto/validacion-result.response';
 
 @Resolver(() => Credenciale)
 export class CredencialesResolver {
@@ -22,7 +23,27 @@ export class CredencialesResolver {
   async validarQR(@Args('qr_hash', { type: () => String }) qr_hash: string) {
     return await this.credencialesService.findByHash(qr_hash);
   }
+@Mutation(() => ValidacionResult, { name: 'validarAcceso' })
+  async validarAcceso(
+    @Args('qr_hash', { type: () => String }) qr_hash: string,
+    @Args('puntoId', { type: () => Int }) puntoId: number,
+    @Args('verificadorId', { type: () => Int }) verificadorId: number,
+  ) {
+    // 🕵️ DEBUG: Esto te dirá si la petición llegó al túnel
+    console.log("--- 🛰️ PETICIÓN RECIBIDA EN RESOLVER ---");
+    console.log(`QR: ${qr_hash.substring(0, 10)}... | Punto: ${puntoId} | Guardia: ${verificadorId}`);
 
+    try {
+      const resultado = await this.credencialesService.validarAccesoReal(qr_hash, puntoId, verificadorId);
+      console.log("--- ✅ RESPUESTA ENVIADA DESDE RESOLVER ---");
+      return resultado;
+    } catch (error) {
+      console.error("--- ❌ CRASH EN RESOLVER ---", error.message);
+      throw error;
+    }
+  }
+
+  
   // --- MÉTODOS ADMINISTRATIVOS (CRUD) ---
 
   @Query(() => [Credenciale], { name: 'credenciales' })
