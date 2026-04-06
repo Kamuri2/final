@@ -253,6 +253,7 @@ type Query {
   puntosAcceso: [PuntoAcceso!]!
   registroAcceso(id: Int!): RegistroAcceso
   registrosAcceso: [RegistroAcceso!]!
+  reporteDiario(fecha: String!): [RegistroAcceso!]!
   role(id: Int!): Role
   roles: [Role!]!
   sancion(id: Int!): Sancion

@@ -7,24 +7,34 @@ import { CreateCredencialeInput } from './dto/create-credenciale.input';
 export class CredencialesService {
   constructor(private prisma: PrismaService) {}
 
-  // 🔥 GENERACIÓN: 30 segundos con normalización UTC
+  // 🕒 FUNCIÓN MAESTRA: Obtiene la fecha actual ajustada a México (UTC-6)
+  private getMexicoDate(): Date {
+    const ahora = new Date();
+    // Restamos 6 horas (6 * 60 * 60 * 1000 ms)
+    return new Date(ahora.getTime() - (6 * 60 * 60 * 1000));
+  }
+
+  // 🔥 GENERACIÓN: 30 segundos exactos con hora local
   async generarCredencialReal(usuarioId: number) {
     const usuario = await this.prisma.usuarios_sistema.findUnique({ where: { id: usuarioId } });
     if (!usuario) throw new UnauthorizedException('Usuario no válido');
 
-    const seed = `RAVEN-${usuario.id}-${Date.now()}`;
+    const ahoraMexico = this.getMexicoDate();
+    const ahoraMs = ahoraMexico.getTime();
+    
+    const seed = `RAVEN-${usuario.id}-${ahoraMs}`;
     const hash = Buffer.from(seed).toString('base64').replace(/=/g, "");
     
-    const expiracion = new Date();
-    expiracion.setSeconds(expiracion.getSeconds() + 30); // 👈 2 minutos para pruebas
+    // El vencimiento será 30 segundos después de la hora de México
+    const vencimiento = new Date(ahoraMs + 30 * 1000); 
 
     return this.prisma.credenciales.upsert({
       where: { usuario_id: usuarioId },
-      update: { qr_hash: hash, vencimiento: expiracion, estado: "ACTIVA" },
+      update: { qr_hash: hash, vencimiento: vencimiento, estado: "ACTIVA" },
       create: { 
         usuario_id: usuarioId, 
         qr_hash: hash, 
-        vencimiento: expiracion, 
+        vencimiento: vencimiento, 
         estado: "ACTIVA",
         alumno_id: usuario.alumno_id,
         empleado_id: usuario.empleado_id 
@@ -44,12 +54,12 @@ export class CredencialesService {
       return { valido: false, mensaje: 'CÓDIGO NO VÁLIDO' };
     }
 
-    // 🕒 COMPARACIÓN DE MILISEGUNDOS UTC (Ignora las 6 horas)
-    const ahoraMs = Date.now(); 
+    // 🕒 Comparación usando hora local ajustada
+    const ahoraMs = this.getMexicoDate().getTime(); 
     const vencimientoMs = new Date(credencial.vencimiento).getTime();
 
-    // LOG DE SEGURIDAD EN TU TERMINAL
-    console.log(`⏱️ Quedan: ${(vencimientoMs - ahoraMs) / 1000} segundos de vida.`);
+    const restante = Math.floor((vencimientoMs - ahoraMs) / 1000);
+    console.log(`⏱️ El QR tiene ${restante} segundos de vida restantes (Hora Local).`);
 
     if (ahoraMs > vencimientoMs) {
       await this.registrarEvento(credencial.usuario_id, puntoId, verificadorId, false, 'QR EXPIRADO', credencial.id);
@@ -67,7 +77,8 @@ export class CredencialesService {
     await this.registrarEvento(credencial.usuario_id, puntoId, verificadorId, true, null, credencial.id);
     return { valido: true, mensaje: 'ACCESO PERMITIDO', alumno: credencial.alumnos };
   }
-  // --- 🛠️ MÉTODOS CRUD (Necesarios para el Resolver de tu imagen 3) ---
+
+  // --- 🛠️ MÉTODOS CRUD ---
 
   async findByHash(qr_hash: string) {
     return this.prisma.credenciales.findUnique({
@@ -96,36 +107,41 @@ export class CredencialesService {
     return this.prisma.credenciales.delete({ where: { id } });
   }
 
- private async registrarEvento(
-  usuarioId: number, 
-  puntoId: number, 
-  verificadorId: number, 
-  concedido: boolean, 
-  motivo: string | null = null, 
-  credencialId: number | null = null
-) {
-  try {
-    console.log("📝 Intentando registrar evento para usuario:", usuarioId);
-    
-    return await this.prisma.registros_acceso.create({
-      data: {
-        concedido,
-        motivo_rechazo: motivo,
-        punto_id: puntoId,
-        usuario_id: usuarioId, 
-        credencial_id: credencialId,
-        fecha_hora: new Date()
-      }
-    });
-  } catch (error) {
-    // 🚨 ESTO TE DIRÁ LA VERDAD EN LA TERMINAL
-    console.error("❌ ERROR CRÍTICO AL GUARDAR REGISTRO:", error.message);
-    console.error("🔍 Revisa que punto_id y usuario_id existan en sus tablas.");
+  private async registrarEvento(
+    usuarioId: number, 
+    puntoId: number, 
+    verificadorId: number, 
+    concedido: boolean, 
+    motivo: string | null = null, 
+    credencialId: number | null = null
+  ) {
+    try {
+      console.log("📝 Registrando evento con hora de México...");
+      
+      return await this.prisma.registros_acceso.create({
+        data: {
+          concedido,
+          motivo_rechazo: motivo,
+          punto_id: puntoId,
+          usuario_id: usuarioId, 
+          credencial_id: credencialId,
+          // 🕒 Usamos la función de ajuste aquí también
+          fecha_hora: this.getMexicoDate() 
+        }
+      });
+    } catch (error) {
+      console.error("❌ ERROR AL GUARDAR REGISTRO:", error.message);
+    }
   }
-}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // 🧹 LIMPIEZA DIARIA
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async limpiarQRsExpirados() {
-    await this.prisma.credenciales.deleteMany({ where: { vencimiento: { lt: new Date() } } });
+    console.log("🧹 Iniciando limpieza diaria...");
+    const ahoraMexico = this.getMexicoDate();
+    const resultado = await this.prisma.credenciales.deleteMany({ 
+        where: { vencimiento: { lt: ahoraMexico } } 
+    });
+    console.log(`✅ Se eliminaron ${resultado.count} QR expirados.`);
   }
 }

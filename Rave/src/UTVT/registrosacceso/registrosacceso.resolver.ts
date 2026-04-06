@@ -8,9 +8,17 @@ import { UpdateRegistrosAccesoInput } from './dto/update-registrosacceso.input';
 export class RegistrosAccesoResolver {
   constructor(private readonly registrosAccesoService: RegistrosAccesoService) {}
 
+  // 📊 NUEVO: Query para el reporte del Admin
+  @Query(() => [RegistroAcceso], { name: 'reporteDiario' })
+  async getReporteDiario(
+    @Args('fecha', { type: () => String }) fecha: string // Recibe "YYYY-MM-DD"
+  ) {
+    return this.registrosAccesoService.obtenerReportePorDia(fecha);
+  }
+
+  // --- Tus métodos anteriores ---
   @Mutation(() => RegistroAcceso)
   createRegistroAcceso(@Args('createRegistrosAccesoInput') data: CreateRegistrosAccesoInput) {
-    // Aquí usamos la función que creamos en  el servicio
     return this.registrosAccesoService.registrarIntento(data); 
   }
 
@@ -21,19 +29,16 @@ export class RegistrosAccesoResolver {
 
   @Query(() => RegistroAcceso, { name: 'registroAcceso', nullable: true })
   findOne(@Args('id', { type: () => Int }) id: number) {
-    // Asegúrate de tener findOne de registros de aceceso
     return this.registrosAccesoService.findOne(id);
   }
 
   @Mutation(() => RegistroAcceso)
   updateRegistroAcceso(@Args('updateRegistrosAccesoInput') data: UpdateRegistrosAccesoInput) {
-    // update en el servicio de registros_acceso
     return this.registrosAccesoService.update(data.id, data);
   }
 
   @Mutation(() => RegistroAcceso)
   removeRegistroAcceso(@Args('id', { type: () => Int }) id: number) {
-    // tener remove en el servicio de registros_acceso
     return this.registrosAccesoService.remove(id);
   }
 }
