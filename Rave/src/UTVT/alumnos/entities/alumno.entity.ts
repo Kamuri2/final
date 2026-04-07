@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Grupo } from '../../grupos/entities/grupo.entity';
 
 @ObjectType()
 export class Alumno {
@@ -16,6 +17,9 @@ export class Alumno {
 
   @Field(() => Int, { nullable: true }) 
   semestre?: number;
+ 
+  @Field(() => Grupo, { nullable: true })
+  grupos?: Grupo;
 
   // 🏫 VITAL: Esto permite que el Home lea el ID del grupo
   @Field(() => Int, { nullable: true })
@@ -27,4 +31,7 @@ export class Alumno {
   // 🆔 Relación opcional por si necesitas saber qué usuario le pertenece
   @Field(() => Int, { nullable: true })
   userId?: number;
+
+  
+  
 }

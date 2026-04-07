@@ -44,6 +44,31 @@ export class UsuarioSistemaService {
     };
   }
 
+  // =========================================================================
+  // 🏫 GESTIÓN ACADÉMICA (CARRERAS Y GRUPOS)
+  // =========================================================================
+
+  async findAllCarreras() {
+    return this.prisma.carreras.findMany({ include: { grupos: true } });
+  }
+
+  async createCarrera(nombre: string) {
+    return this.prisma.carreras.create({ data: { nombre, clave: 'TEMP' } });
+  }
+
+  async removeCarrera(id: number) {
+    return this.prisma.carreras.delete({ where: { id } });
+  }
+
+  async createGrupo(nombre: string, carreraId: number) {
+    return this.prisma.grupos.create({
+      data: { nombre, carrera_id: carreraId, semestre: 1 },
+    });
+  }
+
+  async removeGrupo(id: number) {
+    return this.prisma.grupos.delete({ where: { id } });
+  }
   // 📝 REGISTRO INICIAL
   async create(data: CreateUsuarioSistemaInput) {
     const existeUsuario = await this.prisma.usuarios_sistema.findUnique({
@@ -68,7 +93,7 @@ export class UsuarioSistemaService {
     });
   }
 
-  // 🛠️ ACTUALIZACIÓN DE FICHA (El Corazón de RavenID)
+  // 🛠️ ACTUALIZACIÓN DE FICHA
   async update(id: number, input: UpdateUsuarioSistemaInput) {
     return this.prisma.$transaction(async (tx) => {
       
@@ -141,11 +166,25 @@ export class UsuarioSistemaService {
     if (!usuario) throw new NotFoundException('Usuario no encontrado');
     return usuario;
   }
+  //SECCION DE ACTUALIZACION DE CARRERAS Y GRUPOS
+  async updateCarrera(id: number, nombre: string) {
+  return this.prisma.carreras.update({
+    where: { id },
+    data: { nombre },
+  });
+}
 
+async updateGrupo(id: number, nombre: string) {
+  return this.prisma.grupos.update({
+    where: { id },
+    data: { nombre },
+  });
+}
   // =========================================================================
   // 🔥 NUEVA SECCIÓN: RECUPERACIÓN DE CONTRASEÑA VÍA CORREO (OTP)
   // =========================================================================
 
+  
   // 1️⃣ EL ALUMNO PIDE RECUPERAR SU CONTRASEÑA
   async solicitarRecuperacion(email: string) {
     const usuario = await this.prisma.usuarios_sistema.findUnique({ where: { email } });

@@ -10,4 +10,7 @@ export class PuntoAcceso {
 
   @Field()
   tipo: string; 
+
+  @Field()
+  nombre: string;
 }

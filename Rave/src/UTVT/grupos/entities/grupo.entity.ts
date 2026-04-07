@@ -17,4 +17,5 @@ export class Grupo {
 
   @Field(() => Carrera, { nullable: true })
   carreras?: Carrera; // Relación con Carrera para obtener el nombre de la carrera al consultar un grupo
+  
 }

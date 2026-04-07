@@ -6,6 +6,7 @@ type Alumno {
   carrera: String
   estado_academico: String!
   grupo_id: Int
+  grupos: Grupo
   id: Int!
   matricula: String!
   nombre_completo: String!
@@ -20,16 +21,17 @@ type Carrera {
   nombre: String!
 }
 
+type CarreraAcad {
+  grupos: [GrupoAcad]!
+  id: Int!
+  nombre: String!
+}
+
 input CreateAlumnoInput {
   estado_academico: String!
   grupo_id: Int!
   matricula: String!
   nombre_completo: String!
-}
-
-input CreateCarreraInput {
-  clave: String!
-  nombre: String!
 }
 
 input CreateCredencialeInput {
@@ -49,12 +51,6 @@ input CreateEmpleadoInput {
   depto_id: Int!
   nombre_completo: String!
   num_empleado: String!
-}
-
-input CreateGrupoInput {
-  carrera_id: Int!
-  nombre: String!
-  semestre: Int!
 }
 
 input CreateHorarioInput {
@@ -152,6 +148,11 @@ type Grupo {
   semestre: Int!
 }
 
+type GrupoAcad {
+  id: Int!
+  nombre: String!
+}
+
 type Horario {
   dia_semana: String!
   grupo_id: Int!
@@ -169,11 +170,11 @@ type LoginResponse {
 type Mutation {
   actualizarAlumno(id: Int!, input: UpdateUsuarioSistemaInput!): UsuarioSistema!
   createAlumno(createAlumnoInput: CreateAlumnoInput!): Alumno!
-  createCarrera(createCarreraInput: CreateCarreraInput!): Carrera!
+  createCarrera(nombre: String!): CarreraAcad!
   createCredenciale(createCredencialeInput: CreateCredencialeInput!): Credenciale!
   createDepartamento(createDepartamentoInput: CreateDepartamentoInput!): Departamento!
   createEmpleado(createEmpleadoInput: CreateEmpleadoInput!): Empleado!
-  createGrupo(createGrupoInput: CreateGrupoInput!): Grupo!
+  createGrupo(carreraId: Int!, nombre: String!): GrupoAcad!
   createHorario(createHorarioInput: CreateHorarioInput!): Horario!
   createPaseVisita(createPasesVisitaInput: CreatePaseVisitaInput!): PaseVisita!
   createPuntoAcceso(createPuntosAccesoInput: CreatePuntosAccesoInput!): PuntoAcceso!
@@ -181,6 +182,8 @@ type Mutation {
   createRole(createRoleInput: CreateRoleInput!): Role!
   createSancion(createSancionInput: CreateSancionInput!): Sancion!
   createVisitante(createVisitanteInput: CreateVisitanteInput!): Visitante!
+  deleteCarrera(id: Int!): CarreraAcad!
+  deleteGrupo(id: Int!): GrupoAcad!
   generarCredencial(usuarioId: Int!): Credenciale!
   login(password: String!, username: String!): LoginResponse!
   registrarAlumno(input: CreateUsuarioSistemaInput!): UsuarioSistema!
@@ -200,11 +203,11 @@ type Mutation {
   resetearPasswordConPin(email: String!, nuevaPassword: String!, pin: String!): String!
   solicitarRecuperacionPassword(email: String!): String!
   updateAlumno(updateAlumnoInput: UpdateAlumnoInput!): Alumno!
-  updateCarrera(updateCarreraInput: UpdateCarreraInput!): Carrera!
+  updateCarrera(id: Int!, nombre: String!): CarreraAcad!
   updateCredenciale(updateCredencialeInput: UpdateCredencialeInput!): Credenciale!
   updateDepartamento(updateDepartamentoInput: UpdateDepartamentoInput!): Departamento!
   updateEmpleado(updateEmpleadoInput: UpdateEmpleadoInput!): Empleado!
-  updateGrupo(updateGrupoInput: UpdateGrupoInput!): Grupo!
+  updateGrupo(id: Int!, nombre: String!): GrupoAcad!
   updateHorario(updateHorarioInput: UpdateHorarioInput!): Horario!
   updatePaseVisita(updatePasesVisitaInput: UpdatePasesVisitaInput!): PaseVisita!
   updatePuntoAcceso(updatePuntosAccesoInput: UpdatePuntosAccesoInput!): PuntoAcceso!
@@ -226,6 +229,7 @@ type PaseVisita {
 
 type PuntoAcceso {
   id: Int!
+  nombre: String!
   tipo: String!
   ubicacion: String!
 }
@@ -242,6 +246,7 @@ type Query {
   empleado(id: Int!): Empleado
   empleadoPorNum(num_empleado: String!): Empleado
   empleados: [Empleado!]!
+  getCarreras: [CarreraAcad!]!
   getUsuarioStatus(id: Int!): UsuarioSistema!
   grupo(id_grupo: Int!): Grupo
   grupos: [Grupo!]!
@@ -271,7 +276,9 @@ type RegistroAcceso {
   id: Int!
   motivo_rechazo: String
   punto_id: Int!
+  puntos_acceso: PuntoAcceso
   usuario_id: Int!
+  usuarios_sistema: UsuarioSistema
 }
 
 type Role {
@@ -294,12 +301,6 @@ input UpdateAlumnoInput {
   nombre_completo: String
 }
 
-input UpdateCarreraInput {
-  clave: String
-  id: Int!
-  nombre: String
-}
-
 input UpdateCredencialeInput {
   alumno_id: Int
   empleado_id: Int
@@ -320,13 +321,6 @@ input UpdateEmpleadoInput {
   id: Int!
   nombre_completo: String
   num_empleado: String
-}
-
-input UpdateGrupoInput {
-  carrera_id: Int
-  id_grupo: Int!
-  nombre: String
-  semestre: Int
 }
 
 input UpdateHorarioInput {

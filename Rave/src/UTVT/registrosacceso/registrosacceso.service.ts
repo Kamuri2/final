@@ -14,55 +14,67 @@ export class RegistrosAccesoService {
   }
 
   async registrarIntento(data: {
-    concedido: boolean;
-    motivo_rechazo?: string;
-    punto_id: number;
-    usuario_id: number;
-    credencial_id?: number;
-    pase_id?: number;
-  }) {
-    return this.prisma.registros_acceso.create({
-      data: {
-        ...data,
-        fecha_hora: this.getMexicoDate(), // 👈 Sincronizado con hora de México
-      }
-    });
-  }
+  concedido: boolean;
+  motivo_rechazo?: string;
+  punto_id: number;
+  usuario_id: number;
+  credencial_id?: number;
+  pase_id?: number;
+}) {
+  return this.prisma.registros_acceso.create({
+    data: {
+      ...data,
+      fecha_hora: new Date(), // 👈 Usa la hora real del sistema (UTC)
+    }
+  });
+}
+ //async obtenerReportePorDia(fechaStr: string) {
+  //const inicio = new Date(`${fechaStr}T00:00:00`);
+  //const fin = new Date(`${fechaStr}T23:59:59`);
 
-  // 📊 NUEVO: El motor del Reporte para el Admin
-  async obtenerReportePorDia(fechaStr: string) {
-    // fechaStr llega como "2026-04-06"
-    // Creamos el rango de ese día en específico
-    const inicio = new Date(`${fechaStr}T00:00:00.000Z`);
-    const fin = new Date(`${fechaStr}T23:59:59.999Z`);
+  //return this.prisma.registros_acceso.findMany({
+    //where: {
+      //fecha_hora: { gte: inicio, lte: fin },
+    //},
+    //include: {
+      //usuarios_sistema: {
+        //include: {
+          //alumnos: {
+            //include: {
+              //grupos: true, // 👈 Solo grupos, carrera no porque es String
+            //},
+          //},  
+          //}
+        //}
+      //},
+      //puntos_acceso: true, // 👈 Asegúrate que en Prisma se llame así
+    //},
+    //orderBy: { fecha_hora: 'desc' },
+  //});
+//}
+async obtenerReportePorDia(fechaStr: string) {
+  // Mantenemos el rango de 6am a 6am UTC para capturar el día completo de México
+  const inicio = new Date(`${fechaStr}T06:00:00.000Z`); 
+  const fin = new Date(inicio);
+  fin.setDate(fin.getDate() + 1);
 
-    return this.prisma.registros_acceso.findMany({
-      where: {
-        fecha_hora: {
-          gte: inicio,
-          lte: fin,
-        },
+  return this.prisma.registros_acceso.findMany({
+    where: {
+      fecha_hora: {
+        gte: inicio,
+        lt: fin,
       },
-      include: {
-        // Jalamos toda la cadena de datos para el Admin
-        usuarios_sistema: {
-          include: {
-            alumnos: {
-              include: { // Nombre de la carrera
-                grupos: true, 
-                sanciones: true,  // Nombre del grupo (TIC-71, etc)
-              }
-            }
-          }
-        },
-        puntos_acceso: true, // Nombre del lugar (Entrada Principal, etc)
-      },
-      orderBy: {
-        fecha_hora: 'desc', // Los más recientes primero
-      },
-    });
-  }
-
+    },
+    include: {
+      usuarios_sistema: { include: { alumnos: { include: { grupos: true } } } },
+      puntos_acceso: true,
+    },
+    // 🔽 CAMBIO AQUÍ: de 'desc' a 'asc' para ir de hora menor a mayor
+    orderBy: { 
+      fecha_hora: 'asc' 
+    },
+  });
+}
   async findAll() {
     return this.prisma.registros_acceso.findMany({
       include: {
