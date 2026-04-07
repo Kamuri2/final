@@ -19,31 +19,54 @@ interface Registro {
 }
 
 const AdminDashboardView = () => {
-    const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+    // 🕒 Forzamos la fecha de inicio a la zona horaria de México
+    const [fecha, setFecha] = useState(
+        new Intl.DateTimeFormat('fr-CA', {
+            timeZone: 'America/Mexico_City',
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        }).format(new Date())
+    );
     const [registros, setRegistros] = useState<Registro[]>([]);
     const [loading, setLoading] = useState(false);
 
+    // 🕒 Esta función ignora la zona horaria y lee la "hora de pared" exacta
+    const formatTimeMX = (isoString: string) => {
+        if (!isoString) return "N/A";
+
+        // ⚡ EL TRUCO: Quitamos la 'Z' para que el navegador NO reste 6 horas
+        const fechaLimpia = isoString.replace('Z', '');
+
+        return new Date(fechaLimpia).toLocaleTimeString('es-MX', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    };
     // Traer los datos de la base de datos
     const fetchReporte = async () => {
         setLoading(true);
         const GQL_QUERY = {
             query: `
-        query GetReporte($fecha: String!) {
-          reporteDiario(fecha: $fecha) {
-            id fecha_hora concedido motivo_rechazo
-            puntos_acceso { nombre }
-            usuarios_sistema {
-              alumnos { 
-                nombre_completo matricula carrera
-                grupos { nombre } 
-              }
-            }
-          }
-        }
-      `,
+                query GetReporte($fecha: String!) {
+                  reporteDiario(fecha: $fecha) {
+                    id 
+                    fecha_hora 
+                    concedido 
+                    motivo_rechazo
+                    puntos_acceso { nombre }
+                    usuarios_sistema {
+                      alumnos { 
+                        nombre_completo 
+                        matricula 
+                        carrera
+                        grupos { nombre } 
+                      }
+                    }
+                  }
+                }
+              `,
             variables: { fecha }
         };
-
         try {
             const response = await fetch('http://192.168.100.6:3000/graphql', {
                 method: 'POST',
@@ -64,14 +87,13 @@ const AdminDashboardView = () => {
     // Función para descargar el EXCEL
     const exportarExcel = () => {
         const datosRaw = registros.map(reg => ({
-            'Hora': new Date(reg.fecha_hora).toLocaleTimeString('es-MX'),
+            'Hora': formatTimeMX(reg.fecha_hora),
             'Matrícula': reg.usuarios_sistema.alumnos?.matricula || 'N/A',
             'Alumno': reg.usuarios_sistema.alumnos?.nombre_completo || 'N/A',
             'Carrera': reg.usuarios_sistema.alumnos?.carrera || 'N/A',
-            'Grupo': reg.usuarios_sistema.alumnos?.grupos?.nombre || 'N/A',
-            'Punto': reg.puntos_acceso.nombre,
+            'Grupo': reg.usuarios_sistema.alumnos?.grupos?.nombre || 'N/A', // 👈 Agregado '?' para evitar errores
             'Resultado': reg.concedido ? 'ACCESO' : 'DENEGADO',
-            'Motivo': reg.motivo_rechazo || ''
+            'Punto': reg.puntos_acceso?.nombre || 'N/A'
         }));
 
         const ws = XLSX.utils.json_to_sheet(datosRaw);
@@ -117,26 +139,33 @@ const AdminDashboardView = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                        {registros.map(reg => (
-                            <tr key={reg.id} className="hover:bg-white/5 transition-colors">
-                                <td className="p-4 font-mono text-[#B08D6D]">
-                                    {new Date(reg.fecha_hora).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                                </td>
-                                <td className="p-4">
-                                    <p className="font-bold">{reg.usuarios_sistema.alumnos?.nombre_completo}</p>
-                                    <p className="opacity-40">{reg.usuarios_sistema.alumnos?.matricula}</p>
-                                </td>
-                                <td className="p-4 uppercase">
-                                    <p>{reg.usuarios_sistema.alumnos?.carrera}</p>
-                                    <p className="text-[#B08D6D] opacity-60">{reg.usuarios_sistema.alumnos?.grupos?.nombre}</p>
-                                </td>
-                                <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-md font-black text-[8px] ${reg.concedido ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-                                        {reg.concedido ? 'OK' : 'FAIL'}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
+                        {loading ? (
+                            <tr><td colSpan={4} className="p-10 text-center opacity-40">Cargando bitácora...</td></tr>
+                        ) : registros.length === 0 ? (
+                            <tr><td colSpan={4} className="p-10 text-center opacity-40">No hay registros para este día.</td></tr>
+                        ) : (
+                            registros.map(reg => (
+                                <tr key={reg.id} className="hover:bg-white/5 transition-colors">
+                                    <td className="p-4 font-mono text-[#B08D6D]">
+                                        {formatTimeMX(reg.fecha_hora)}
+                                    </td>
+
+                                    <td className="p-4">
+                                        <p className="font-bold">{reg.usuarios_sistema.alumnos?.nombre_completo}</p>
+                                        <p className="opacity-40">{reg.usuarios_sistema.alumnos?.matricula}</p>
+                                    </td>
+                                    <td className="p-4 uppercase">
+                                        <p>{reg.usuarios_sistema.alumnos?.carrera}</p>
+                                        <p className="text-[#B08D6D] opacity-60">{reg.usuarios_sistema.alumnos?.grupos?.nombre || 'S/G'}</p>
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-1 rounded-md font-black text-[8px] ${reg.concedido ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                                            {reg.concedido ? 'OK' : 'FAIL'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

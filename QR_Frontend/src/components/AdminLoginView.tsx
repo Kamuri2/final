@@ -40,7 +40,7 @@ const AdminLoginView = ({ onLoginSuccess, onBack }: AdminLoginProps) => {
 
             if (result.errors) {
                 // El servidor dice que no coinciden
-                alert(`❌ Error de RavenID: ${result.errors[0].message}`);
+                alert(`❌ Error : ${result.errors[0].message}`);
             } else if (result.data?.login) {
                 const { rol, token } = result.data.login;
 
@@ -55,7 +55,7 @@ const AdminLoginView = ({ onLoginSuccess, onBack }: AdminLoginProps) => {
                 }
             }
         } catch (error) {
-            alert("⚠️ No hay conexión con el servidor NestJS.");
+            alert("No hay conexión con el servidor.");
         } finally {
             setLoading(false);
         }
@@ -76,14 +76,14 @@ const AdminLoginView = ({ onLoginSuccess, onBack }: AdminLoginProps) => {
                         placeholder="USUARIO"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs outline-none focus:border-[#B08D6D] transition-all placeholder:text-white/20"
+                        className="w-full bg-black border border-white/10 p-4 rounded-xl text-black text-xs outline-none focus:border-[#B08D6D] transition-all placeholder:text-white/20"
                     />
                     <input
                         type="password"
                         placeholder="CONTRASEÑA"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white text-xs outline-none focus:border-[#B08D6D] transition-all placeholder:text-white/20"
+                        className="w-full bg-white5 border border-white/10 p-4 rounded-xl text-black  text-xs  outline-none focus:border-[#B08D6D] transition-all placeholder:text-white/20"
                     />
                     <button
                         onClick={handleLogin}
