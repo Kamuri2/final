@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// 🎨 Paleta UTVT Oficial
+// Paleta UTVT Oficial
 export const lightTheme = {
     bg: '#F9F9F7', text: '#1B1411', subtext: '#6F4E37',
     primary: '#2D5A27', accent: '#8B5E3C', border: '#DEDECF', cardBg: '#FFFFFF'

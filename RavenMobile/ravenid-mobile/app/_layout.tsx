@@ -1,10 +1,10 @@
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
 import { Stack } from 'expo-router';
-import { ThemeProvider } from '../context/ThemeContext'; // 🛡️ Asegúrate que esté fuera de la carpeta 'app'
+import { ThemeProvider } from '../context/ThemeContext';
 
 // Configuración de Apollo Client
 const client = new ApolloClient({
-  uri: 'http://192.168.100.6:3000/graphql', // 👈 Tu IP de la Machenike
+  uri: 'http://192.168.100.6:3000/graphql', // IP DEL SERVIDOR
   cache: new InMemoryCache(),
 });
 
@@ -15,10 +15,10 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            // 🛡️ CAMBIO: Transición suave de derecha a izquierda
+            // Transición suave de derecha a izquierda
             animation: 'slide_from_right',
-            animationDuration: 350, // 🛡️ Velocidad balanceada
-            contentStyle: { backgroundColor: 'transparent' }, // 🛡️ Evita destellos blancos entre cambios
+            animationDuration: 350, // Velocidad balanceada
+            contentStyle: { backgroundColor: 'transparent' },
           }}
         >
           <Stack.Screen name="index" />

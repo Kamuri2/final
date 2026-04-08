@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View,
   Dimensions, KeyboardAvoidingView, Platform, TouchableWithoutFeedback,
-  Keyboard, Animated, StatusBar, Image // 👈 Importamos Image
+  Keyboard, Animated, StatusBar, Image
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
@@ -25,7 +25,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     isMounted.current = true;
-    Animated.timing(fadeEntrance, { toValue: 1, duration: 600, useNativeDriver: true }).start();
+    Animated.timing(fadeEntrance, { toValue: 1, duration: 800, useNativeDriver: true }).start();
     return () => { isMounted.current = false; };
   }, []);
 
@@ -34,7 +34,7 @@ export default function LoginScreen() {
   const showStatus = (text: string, type: 'error' | 'success') => {
     if (!isMounted.current) return;
     setStatusMessage({ text, type });
-    Animated.spring(sheetAnim, { toValue: 0, tension: 15, friction: 8, useNativeDriver: true }).start();
+    Animated.spring(sheetAnim, { toValue: 0, tension: 20, friction: 7, useNativeDriver: true }).start();
     if (type === 'error') {
       setTimeout(() => {
         if (isMounted.current) Animated.timing(sheetAnim, { toValue: height, duration: 400, useNativeDriver: true }).start(() => setStatusMessage(null));
@@ -48,7 +48,7 @@ export default function LoginScreen() {
       const { data } = await login({ variables: { username: username.trim(), password } });
       if (data?.login?.id && isMounted.current) {
         Keyboard.dismiss();
-        showStatus('ACCESO CONCEDIDO ✓', 'success');
+        showStatus('ACCESO CONCEDIDO', 'success');
         setTimeout(() => {
           if (isMounted.current) router.replace({ pathname: '/Home', params: { id: data.login.id.toString() } });
         }, 1200);
@@ -62,16 +62,20 @@ export default function LoginScreen() {
     <View style={[styles.mainContainer, { backgroundColor: theme.bg }]}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
+      {/* DECORACIÓN SUPERIOR */}
       <View style={styles.diagonalWrapper} pointerEvents="none">
-        <View style={styles.diagonalShape} />
+        <View style={[styles.diagonalShape, { backgroundColor: isDarkMode ? '#1A1A1A' : '#B08D6D' }]} />
         <View style={styles.headerTextContainer}>
-          {/* 🚀 LOGO AGREGADO */}
+
+          {/* RENDERIZADO DEL LOGO SEGÚN EL MODO (OSCURO/CLARO) */}
           <Image
-            source={require('../assets/images/ICONO.png')}
+            source={isDarkMode ? require('../assets/images/ICONO-WHRITE.png') : require('../assets/images/ICONO.png')}
             style={styles.logoImage}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}></Text>
+
+          <Text style={[styles.headerTitle, { color: isDarkMode ? '#B08D6D' : '#FFF' }]}></Text>
+          <Text style={[styles.headerSubtitle, { color: isDarkMode ? '#FFF' : '#F2E7D5' }]}></Text>
         </View>
       </View>
 
@@ -80,44 +84,61 @@ export default function LoginScreen() {
           <Animated.View style={[styles.formContent, { opacity: fadeEntrance }]}>
             <View style={styles.topSpacer} />
 
+            {/* INPUT USERNAME */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputTitle, { color: theme.text }]}>USER NAME</Text>
+              <Text style={[styles.inputTitle, { color: theme.subtext }]}>USUARIO</Text>
               <TextInput
-                style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border }]}
-                placeholder="Usuario" placeholderTextColor={theme.subtext}
+                style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: isDarkMode ? '#B08D6D33' : theme.border }]}
+                placeholder="Ingresa tu usuario"
+                placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.2)' : theme.subtext}
                 value={username} onChangeText={setUsername} autoCapitalize="none"
               />
             </View>
 
+            {/* INPUT PASSWORD */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputTitle, { color: theme.text }]}>PASSWORD</Text>
+              <Text style={[styles.inputTitle, { color: theme.subtext }]}>CONTRASEÑA</Text>
               <TextInput
-                style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border }]}
-                placeholder="••••••••" placeholderTextColor={theme.subtext}
+                style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: isDarkMode ? '#B08D6D33' : theme.border }]}
+                placeholder="••••••••"
+                placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.2)' : theme.subtext}
                 secureTextEntry value={password} onChangeText={setPassword}
               />
             </View>
 
             <TouchableOpacity onPress={() => router.push('/forgot-password' as any)} style={styles.forgotBtn}>
-              <Text style={[styles.forgotText, { color: theme.subtext }]}>¿OLVIDASTE TU CLAVE? <Text style={styles.accentText}>RECUPERAR</Text></Text>
+              <Text style={[styles.forgotText, { color: theme.subtext }]}>¿OLVIDO SU CONTRASEÑA?  <Text style={styles.accentText}>RECUPERAR</Text></Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.mainBtn} onPress={ejecutarLogin} disabled={loading}>
-              {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.mainBtnText}>LOGIN IN</Text>}
+            {/* BOTÓN PRINCIPAL */}
+            <TouchableOpacity style={styles.mainBtn} onPress={ejecutarLogin} disabled={loading} activeOpacity={0.8}>
+              {loading ? (
+                <ActivityIndicator color="#000" />
+              ) : (
+                <Text style={styles.mainBtnText}>ENTRAR</Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push('/register' as any)} style={styles.footerBtn}>
-              <Text style={[styles.footerText, { color: theme.subtext }]}>¿NUEVO INGRESO? <Text style={styles.accentText}>REGÍSTRATE AQUÍ</Text></Text>
+              <Text style={[styles.footerText, { color: theme.subtext }]}>¿NO TIENES UNA CUENTA?  <Text style={styles.accentText}>REGISTRATE</Text></Text>
             </TouchableOpacity>
           </Animated.View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
+      {/* STATUS (DINÁMICO SEGÚN TEMA) */}
       {statusMessage && (
-        <Animated.View style={[styles.premiumSheet, { transform: [{ translateY: sheetAnim }], borderTopColor: statusMessage.type === 'success' ? '#B08D6D' : '#FF4D4D' }]}>
-          <View style={styles.handle} />
+        <Animated.View style={[
+          styles.premiumSheet,
+          {
+            transform: [{ translateY: sheetAnim }],
+            backgroundColor: isDarkMode ? '#121212' : '#F2E7D5',
+            borderTopColor: statusMessage.type === 'success' ? '#B08D6D' : '#FF4D4D'
+          }
+        ]}>
+          <View style={[styles.handle, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]} />
           <Text style={[styles.sheetStatusText, { color: statusMessage.type === 'success' ? '#B08D6D' : '#FF4D4D' }]}>{statusMessage.text}</Text>
-          <Text style={styles.sheetSubText}></Text>
+          <Text style={[styles.sheetSubText, { color: theme.subtext }]}></Text>
         </Animated.View>
       )}
     </View>
@@ -128,23 +149,64 @@ const styles = StyleSheet.create({
   mainContainer: { flex: 1 },
   formContent: { flex: 1, paddingHorizontal: width * 0.1 },
   diagonalWrapper: { position: 'absolute', top: 0, width: width, height: height * 0.45, zIndex: 0 },
-  diagonalShape: { position: 'absolute', top: -height * 0.15, left: -width * 0.2, width: width * 1.5, height: height * 0.5, backgroundColor: '#B08D6D', transform: [{ rotate: '-12deg' }] },
-  headerTextContainer: { position: 'absolute', top: height * 0.05, width: width, alignItems: 'center' }, // 👈 Ajustado el 'top' para que quepa el logo
-  logoImage: { width: normalize(300), height: normalize(300), marginBottom: -10 }, // 👈 Estilo del Logo
-  headerTitle: { fontSize: normalize(21), fontWeight: '900', color: '#FFF', letterSpacing: 8 },
+  diagonalShape: {
+    position: 'absolute',
+    top: -height * 0.15,
+    left: -width * 0.2,
+    width: width * 1.5,
+    height: height * 0.5,
+    transform: [{ rotate: '-12deg' }],
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10
+  },
+  headerTextContainer: { position: 'absolute', top: height * 0.04, width: width, alignItems: 'center' },
+  logoImage: { width: normalize(340), height: normalize(310), marginBottom: normalize(-15) },
+  headerTitle: { fontSize: normalize(32), fontWeight: '900', letterSpacing: 6, textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
+  headerSubtitle: { fontSize: normalize(8), fontWeight: '700', letterSpacing: 4, opacity: 0.8 },
   topSpacer: { height: height * 0.38 },
-  inputGroup: { marginBottom: 15 },
-  inputTitle: { fontSize: 9, fontWeight: '700', marginBottom: 20, letterSpacing: 2 },
-  inputBlock: { padding: normalize(15), borderRadius: 8, fontSize: 16, borderLeftWidth: 3, borderLeftColor: '#B08D6D' },
-  forgotBtn: { alignSelf: 'flex-end', marginBottom: 40 },
+  inputGroup: { marginBottom: 40 },
+  inputTitle: { fontSize: 9, fontWeight: '800', marginBottom: 2, letterSpacing: 2 },
+  inputBlock: {
+    padding: normalize(15),
+    borderRadius: 12,
+    fontSize: 15,
+    borderWidth: 1,
+    borderLeftWidth: 4,
+    borderLeftColor: '#B08D6D'
+  },
+  forgotBtn: { alignSelf: 'flex-end', marginBottom: 35 },
   forgotText: { fontSize: 9, letterSpacing: 1 },
-  mainBtn: { backgroundColor: '#B08D6D', padding: normalize(18), borderRadius: 8, alignItems: 'center', elevation: 10 },
-  mainBtnText: { color: '#FFF', fontWeight: '900', letterSpacing: 2 },
-  footerBtn: { marginTop: 70, alignItems: 'center' },
+  mainBtn: {
+    backgroundColor: '#B08D6D',
+    padding: normalize(18),
+    borderRadius: 15,
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#B08D6D',
+    shadowOpacity: 0.4,
+    shadowRadius: 10
+  },
+  mainBtnText: { color: '#000', fontWeight: '900', letterSpacing: 3, fontSize: 13 },
+  footerBtn: { marginTop: 60, alignItems: 'center' },
   footerText: { fontSize: 10, letterSpacing: 1 },
   accentText: { color: '#B08D6D', fontWeight: 'bold' },
-  premiumSheet: { position: 'absolute', bottom: 0, width: width, backgroundColor: '#F2E7D5', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingTop: 15, paddingBottom: Platform.OS === 'ios' ? 60 : 40, minHeight: height * 0.18, alignItems: 'center', zIndex: 9999, borderTopWidth: 2, elevation: 25 },
-  handle: { width: 50, height: 5, backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: 3, marginBottom: 25 },
+  premiumSheet: {
+    position: 'absolute',
+    bottom: 0,
+    width: width,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingTop: 15,
+    paddingBottom: Platform.OS === 'ios' ? 60 : 40,
+    minHeight: height * 0.18,
+    alignItems: 'center',
+    zIndex: 9999,
+    borderTopWidth: 3,
+    elevation: 25
+  },
+  handle: { width: 50, height: 5, borderRadius: 3, marginBottom: 25 },
   sheetStatusText: { fontSize: normalize(16), fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
-  sheetSubText: { fontSize: 9, color: 'rgba(0,0,0,0.4)', fontWeight: '700', marginTop: 8 }
+  sheetSubText: { fontSize: 8, fontWeight: '700', marginTop: 8, letterSpacing: 2 }
 });

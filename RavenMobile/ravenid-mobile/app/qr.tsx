@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg'; // 👈 Generador de QR
 
-// 🔍 Consulta para traer la info de Jesus
+// Consulta para traer la info deL alumno
 const GET_USER_FOR_QR = gql`
   query GetUserForQR($id: Int!) {
     getUsuarioStatus(id: $id) {
@@ -29,29 +29,29 @@ export default function QRScreen() {
         skip: !id,
     });
 
-    // 🔄 Función para generar el contenido dinámico del QR
+    // Función para generar el contenido dinámico del QR
     const generateDynamicQR = () => {
         if (data?.getUsuarioStatus) {
             const payload = {
                 uid: data.getUsuarioStatus.id,
                 nom: data.getUsuarioStatus.alumnos?.nombre_completo,
                 mat: data.getUsuarioStatus.alumnos?.matricula,
-                ts: Date.now(), // 👈 Timestamp: La clave de la caducidad
+                ts: Date.now(), // caducidad del qr
             };
             // Convertimos el objeto a un String para el QR
             setQrValue(JSON.stringify(payload));
-            setTimeLeft(30); // Reiniciamos el reloj
+            setTimeLeft(30); // Reinicio del relog
         }
     };
 
-    // ⏱️ Lógica del Cronómetro
+    //  Lógica del Cronómetro
     useEffect(() => {
         if (!loading && data) generateDynamicQR();
 
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
-                    generateDynamicQR(); // Refresca el QR automáticamente
+                    generateDynamicQR(); // Refresca el QR automáticamente (solo 2 veces)
                     return 30;
                 }
                 return prev - 1;
@@ -67,7 +67,7 @@ export default function QRScreen() {
         <View style={styles.container}>
             <View style={styles.card}>
                 <Text style={styles.japaneseHeader}>通行証</Text>
-                <Text style={styles.title}>Acceso RavenID</Text>
+                <Text style={styles.title}>Acceso Qrify</Text>
 
                 <Text style={styles.userName}>
                     {data?.getUsuarioStatus?.alumnos?.nombre_completo || "Usuario"}
