@@ -85,7 +85,7 @@ const Index = () => {
           matricula: res.alumno.matricula,
           carrera: res.alumno.carrera,
           semestre: res.alumno.semestre,
-          activo: true, turno: "Matutino", fechaIngreso: "2024"
+
         });
       } else { setGateType("error"); }
       setGateActive(true);
@@ -103,7 +103,7 @@ const Index = () => {
       <TrainGateAnimation isActive={gateActive} type={gateType} onComplete={handleGateComplete} />
 
       <div className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden bg-[#0A0A0A]">
-        <div className="fixed inset-0 asanoha-pattern opacity-10 pointer-events-none" />
+        <div className="fixed inset-0 asanoha-pattern opacity-10 pointer-events-none justify-center items-center flex" />
         <div className="fixed inset-0 bg-gradient-to-tr from-black via-[#0f0f0f] to-[#1a1a0a] pointer-events-none" />
 
         <div className={`relative z-10 w-full flex flex-col items-center ${isAdminAuthenticated && adminSubMode !== "menu" ? 'max-w-7xl' : 'max-w-[600px]'}`}>

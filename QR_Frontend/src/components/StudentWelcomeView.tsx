@@ -11,23 +11,23 @@ export interface StudentData {
   matricula: string;
   carrera: string;
   semestre: number;
-  activo: boolean; // 🛡️ Lo dejaremos como boolean para el Badge
-  turno: string;
-  fechaIngreso: string;
+  //activo: boolean; // 🛡️ Lo dejaremos como boolean para el Badge
+  //turno: string;
+  //fechaIngreso: string;
 }
 
 // ============================================
 // DATOS DE SIMULACIÓN - REEMPLAZAR CON DATOS REALES
 // ============================================
-export const MOCK_STUDENT: StudentData = {
-  nombre: "Carlos Martínez López",
-  matricula: "2024-0158",
-  carrera: "Ingeniería en Sistemas",
-  semestre: 4,
-  activo: true,
-  turno: "Matutino",
-  fechaIngreso: "Agosto 2022",
-};
+//export const MOCK_STUDENT: StudentData = {
+//nombre: "Carlos Martínez López",
+//matricula: "2024-0158",
+//carrera: "Ingeniería en Sistemas",
+//semestre: 4,
+//activo: true,
+//turno: "Matutino",
+//fechaIngreso: "Agosto 2022",
+//};
 
 interface StudentWelcomeViewProps {
   student: StudentData;
@@ -86,24 +86,7 @@ const StudentWelcomeView = ({ student }: StudentWelcomeViewProps) => {
           label="Semestre"
           value={`${student.semestre}°`}
         />
-        <InfoRow icon={User} label="Turno" value={student.turno} />
-        <InfoRow icon={Calendar} label="Ingreso" value={student.fechaIngreso} />
-        <InfoRow
-          icon={ShieldCheck}
-          label="Estado"
-          value={
-            <Badge
-              variant={student.activo ? "default" : "destructive"}
-              className={
-                student.activo
-                  ? "bg-matcha text-matcha-foreground hover:bg-matcha/90 text-[10px]"
-                  : "text-[10px]"
-              }
-            >
-              {student.activo ? "Activo" : "Inactivo"}
-            </Badge>
-          }
-        />
+
       </div>
     </div>
   );

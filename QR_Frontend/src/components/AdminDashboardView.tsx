@@ -99,7 +99,7 @@ const AdminDashboardView = () => {
         const ws = XLSX.utils.json_to_sheet(datosRaw);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Accesos");
-        XLSX.writeFile(wb, `RavenID_Reporte_${fecha}.xlsx`);
+        XLSX.writeFile(wb, `Qrify_Reporte_${fecha}.xlsx`);
     };
 
     return (
@@ -127,15 +127,15 @@ const AdminDashboardView = () => {
                 </div>
             </div>
 
-            {/* Tabla Estilo RavenID */}
-            <div className="bg-black/40 border border-white/5 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl">
+            {/* TabLA */}
+            <div className="bg-black/40 border border-white/5 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl, text-align: center">
                 <table className="w-full text-left text-xs">
                     <thead className="bg-[#B08D6D]/10 text-[#B08D6D] uppercase tracking-widest text-[9px]">
                         <tr>
                             <th className="p-4">Hora</th>
                             <th className="p-4">Alumno</th>
                             <th className="p-4">Carrera / Grupo</th>
-                            <th className="p-4">Estado</th>
+                            {/*<th className="p-4">Estado</th>*/}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
