@@ -9,16 +9,16 @@ import { ValidacionResult } from './dto/validacion-result.response';
 export class CredencialesResolver {
   constructor(private readonly credencialesService: CredencialesService) {}
 
-  // 🔥 MUTATION MAESTRA: Genera 1 solo QR real y borra los viejos en la DB
+  // MUTATION MAESTRA: Genera 1 solo QR real y borra los viejos en la DB
   @Mutation(() => Credenciale, { name: 'generarCredencial' })
   async generarCredencial(
     @Args('usuarioId', { type: () => Int }) usuarioId: number
   ) {
-    // Aquí disparamos la lógica de: Borrar previos -> Crear nuevo -> Devolver Hash
+    // Aquí disparamos la lógica de: Borrar previos Crear nuevo  Devolver Hash
     return await this.credencialesService.generarCredencialReal(usuarioId);
   }
 
-  // 🛡️ CONSULTA PARA EL GUARDIA: Valida si el QR existe y a quién pertenece
+  // CONSULTA PARA EL GUARDIA: Valida si el QR existe y a quién pertenece
   @Query(() => Credenciale, { name: 'validarQR', nullable: true })
   async validarQR(@Args('qr_hash', { type: () => String }) qr_hash: string) {
     return await this.credencialesService.findByHash(qr_hash);
@@ -29,7 +29,7 @@ export class CredencialesResolver {
     @Args('puntoId', { type: () => Int }) puntoId: number,
     @Args('verificadorId', { type: () => Int }) verificadorId: number,
   ) {
-    // 🕵️ DEBUG: Esto te dirá si la petición llegó al túnel
+    // DEBUG
     console.log("--- 🛰️ PETICIÓN RECIBIDA EN RESOLVER ---");
     console.log(`QR: ${qr_hash.substring(0, 10)}... | Punto: ${puntoId} | Guardia: ${verificadorId}`);
 
@@ -44,7 +44,7 @@ export class CredencialesResolver {
   }
 
   
-  // --- MÉTODOS ADMINISTRATIVOS (CRUD) ---
+  //  MÉTODOS ADMINISTRATIVOS (CRUD) 
 
   @Query(() => [Credenciale], { name: 'credenciales' })
   findAll() {

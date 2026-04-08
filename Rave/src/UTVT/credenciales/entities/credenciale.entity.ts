@@ -7,12 +7,12 @@ import { Alumno } from '../../alumnos/entities/alumno.entity';
 export class Credenciale {
   @Field(() => Int)
   id: number;
-  @Field(() => Int) // ✅ Nuevo (Sin el nullable)
+  @Field(() => Int) //  Nuevo 
   usuario_id: number;
   @Field()
-  qr_hash: string; // Hash encriptado real que viaja al QR
+  qr_hash: string; // Hash encriptado 
 
-  @Field(() => Date) // 👈 IMPORTANTE: Forzamos que GraphQL lo trate como fecha con hora
+  @Field(() => Date) // MPORTANTE: Forzamos que GraphQL lo trate como fecha con hora
   vencimiento: Date;
 
   @Field()
@@ -22,7 +22,7 @@ export class Credenciale {
   alumno_id?: number;
 
   @Field(() => Int, { nullable: true })
-  empleado_id?: number; // 👈 Agregamos esto para que coincida con tu Prisma
+  empleado_id?: number; // Agregamos esto para que coincida con Prisma
 
   @Field(() => Alumno, { nullable: true })
   alumnos?: Alumno; 

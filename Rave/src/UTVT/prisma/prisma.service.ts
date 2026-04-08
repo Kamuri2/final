@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor() {
     super({
-      log: ['query', 'info', 'warn', 'error'], // 🔍 Esto imprimirá el SQL real en tu terminal
+      log: ['query', 'info', 'warn', 'error'], // Esto imprimirá el SQL real en Terminal
     });
   }
   async onModuleInit() {

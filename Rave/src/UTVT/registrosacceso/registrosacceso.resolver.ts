@@ -8,7 +8,7 @@ import { UpdateRegistrosAccesoInput } from './dto/update-registrosacceso.input';
 export class RegistrosAccesoResolver {
   constructor(private readonly registrosAccesoService: RegistrosAccesoService) {}
 
-  // 📊 NUEVO: Query para el reporte del Admin
+  //  NUEVO: Query para el reporte del Admin
   @Query(() => [RegistroAcceso], { name: 'reporteDiario' })
   async getReporteDiario(
     @Args('fecha', { type: () => String }) fecha: string // Recibe "YYYY-MM-DD"
@@ -16,7 +16,7 @@ export class RegistrosAccesoResolver {
     return this.registrosAccesoService.obtenerReportePorDia(fecha);
   }
 
-  // --- Tus métodos anteriores ---
+  
   @Mutation(() => RegistroAcceso)
   createRegistroAcceso(@Args('createRegistrosAccesoInput') data: CreateRegistrosAccesoInput) {
     return this.registrosAccesoService.registrarIntento(data); 

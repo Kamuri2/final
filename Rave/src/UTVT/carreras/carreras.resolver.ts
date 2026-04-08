@@ -1,21 +1,21 @@
 import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql'; // 👈 Agregamos ResolveField y Parent
 import { CarrerasService } from './carreras.service';
 import { Carrera } from './entities/carrera.entity';
-import { Grupo } from '../grupos/entities/grupo.entity'; // 👈 Importa la entidad Grupo
+import { Grupo } from '../grupos/entities/grupo.entity'; // Importa la entidad Grupo
 import { CreateCarreraInput } from './dto/create-carrera.input';
 import { UpdateCarreraInput } from './dto/update-carrera.input';
-import { PrismaService } from '../prisma/prisma.service'; // 👈 Necesitamos Prisma aquí
+import { PrismaService } from '../prisma/prisma.service'; // Necesitamos Prisma aquí
 
 @Resolver(() => Carrera)
 export class CarrerasResolver {
   constructor(
     private readonly carrerasService: CarrerasService,
-    private readonly prisma: PrismaService // 👈 Inyectamos Prisma
+    private readonly prisma: PrismaService // Inyectamos Prisma
   ) {}
 
  @ResolveField(() => [Grupo])
   async grupos(@Parent() carrera: Carrera) {
-    // 🔍 Esto nos dirá en la terminal de la Machenike qué ID está llegando
+    // MENSAJE EN TERMINAL DE QUE ID LLEGA
     const carreraId = Number(carrera.id);
     console.log(`🔎 Buscando grupos para la carrera ID: ${carreraId}`);
 

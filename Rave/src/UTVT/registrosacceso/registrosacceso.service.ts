@@ -7,7 +7,7 @@ import { UpdateRegistrosAccesoInput } from './dto/update-registrosacceso.input';
 export class RegistrosAccesoService {
   constructor(private prisma: PrismaService) {}
 
-  // 🕒 Ayudante para mantener la hora de México (UTC-6)
+  // Ayudante para mantener la hora de México (UTC-6)
   private getMexicoDate(): Date {
     const ahora = new Date();
     return new Date(ahora.getTime() - (6 * 60 * 60 * 1000));
@@ -24,7 +24,7 @@ export class RegistrosAccesoService {
   return this.prisma.registros_acceso.create({
     data: {
       ...data,
-      fecha_hora: new Date(), // 👈 Usa la hora real del sistema (UTC)
+      fecha_hora: new Date(), // Usa la hora real del sistema (UTC)
     }
   });
 }
@@ -41,13 +41,13 @@ export class RegistrosAccesoService {
         //include: {
           //alumnos: {
             //include: {
-              //grupos: true, // 👈 Solo grupos, carrera no porque es String
+              //grupos: true, // Solo grupos, carrera no porque es String
             //},
           //},  
           //}
         //}
       //},
-      //puntos_acceso: true, // 👈 Asegúrate que en Prisma se llame así
+      //puntos_acceso: true, // Asegúrate que en Prisma se llame así
     //},
     //orderBy: { fecha_hora: 'desc' },
   //});
@@ -69,7 +69,7 @@ async obtenerReportePorDia(fechaStr: string) {
       usuarios_sistema: { include: { alumnos: { include: { grupos: true } } } },
       puntos_acceso: true,
     },
-    // 🔽 CAMBIO AQUÍ: de 'desc' a 'asc' para ir de hora menor a mayor
+    
     orderBy: { 
       fecha_hora: 'asc' 
     },

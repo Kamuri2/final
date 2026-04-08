@@ -9,6 +9,6 @@ export class ValidacionResult {
   @Field(() => String)
   mensaje: string;
 
-  @Field(() => Alumno, { nullable: true }) // 👈 SIN ESTO, la web no verá al alumno
+  @Field(() => Alumno, { nullable: true }) // SIN ESTO, la web no verá al alumno
   alumno?: Alumno;
 }

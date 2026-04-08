@@ -6,9 +6,9 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 🛡️ CONFIGURACIÓN CORS BLINDADA
+  //  CONFIGURACIÓN CORS
   app.enableCors({
-    // En producción, solo permite tus dominios de la UTVT
+    // En producción, solo permite tus domiOS UTVT
     origin: process.env.NODE_ENV === 'production' 
       ? ['https://fraktalid.utvt.cloud', 'https://web-fraktalid.utvt.cloud'] 
       : true, 
@@ -23,7 +23,7 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 🚀 El puerto ahora es inteligente
+  // El puerto ahora es inteligente
   const port = process.env.PORT || 3000;
   
   // En producción no siempre es necesario el '0.0.0.0', 

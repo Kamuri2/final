@@ -6,7 +6,7 @@ export class UpdateCredencialeInput extends PartialType(CreateCredencialeInput) 
   @Field(() => Int)
   id: number; 
 
-  @Field(() => Int, { nullable: true }) // 👈 nullable porque no siempre se actualiza
+  @Field(() => Int, { nullable: true }) // nullable porque no siempre se actualiza
   usuario_id?: number;
 
   

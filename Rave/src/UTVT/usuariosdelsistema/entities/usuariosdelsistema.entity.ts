@@ -9,7 +9,7 @@ export class UsuarioSistema {
   @Field()
   username: string;
 
-  // 📧 NUEVO: El correo electrónico (Obligatorio para recuperar cuenta)
+  // NUEVO: El correo electrónico (Obligatorio para recuperar cuenta)
   @Field()
   email: string;
 
@@ -22,7 +22,7 @@ export class UsuarioSistema {
   @Field(() => Alumno, { nullable: true })
   alumnos?: Alumno; 
 
-  // 🔐 NUEVOS: Campos para el PIN de recuperación
+  // NUEVOS: Campos para el PIN de recuperación
   // Los marcamos como nullable: true porque la mayor parte del tiempo estarán vacíos
   @Field({ nullable: true })
   reset_pin?: string;

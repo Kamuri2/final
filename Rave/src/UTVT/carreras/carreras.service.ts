@@ -16,7 +16,7 @@ export class CarrerasService {
   async findOne(id: number) {
     return this.prisma.carreras.findUnique({ 
       where: { id },
-      include: { grupos: true } // 👈 También se lo ponemos aquí por si acaso lo buscas individualmente
+      include: { grupos: true } // También se lo ponemos aquí por si acaso lo buscas individualmente
     });
   } 
 
@@ -35,7 +35,7 @@ export class CarrerasService {
   async findAll() {
     return this.prisma.carreras.findMany({
       orderBy: { nombre: 'asc' },
-      include: { grupos: true }, // 👈 ESTA ES LA CLAVE: Le decimos a MSSQL que traiga los grupos anidados
+      include: { grupos: true }, //Le decimos a MSSQL que traiga los grupos anidados
     });
   }
 }

@@ -40,7 +40,7 @@ export class UpdateUsuarioSistemaInput extends PartialType(CreateUsuarioSistemaI
   @IsBoolean()
   registro_completo?: boolean;
 
-  // 📧 Validación agregada para el email
+  //  Validación agregada para el email
   @Field({ nullable: true })
   @IsOptional()
   @IsEmail({}, { message: 'El formato del correo es inválido' })

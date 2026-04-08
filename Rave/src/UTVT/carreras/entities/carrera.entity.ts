@@ -13,7 +13,7 @@ export class Carrera {
   @Field()
   clave: string; 
 
-  // 👈 Le decimos a GraphQL que esta carrera trae sus grupos anidados
+  // Le decimos a GraphQL que esta carrera trae sus grupos anidados
   @Field(() => [Grupo], { nullable: true })
   grupos?: Grupo[];
 }

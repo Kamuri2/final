@@ -7,14 +7,14 @@ import { CreateCredencialeInput } from './dto/create-credenciale.input';
 export class CredencialesService {
   constructor(private prisma: PrismaService) {}
 
-  // 🕒 FUNCIÓN MAESTRA: Obtiene la fecha actual ajustada a México (UTC-6)
+  // FUNCIÓN MAESTRA: Obtiene la fecha actual ajustada a México (UTC-6)
   private getMexicoDate(): Date {
     const ahora = new Date();
     // Restamos 6 horas (6 * 60 * 60 * 1000 ms)
     return new Date(ahora.getTime() - (6 * 60 * 60 * 1000));
   }
 
-  // 🔥 GENERACIÓN: 30 segundos exactos con hora local
+  // GENERACIÓN: 30 segundos exactos con hora local
   async generarCredencialReal(usuarioId: number) {
     const usuario = await this.prisma.usuarios_sistema.findUnique({ where: { id: usuarioId } });
     if (!usuario) throw new UnauthorizedException('Usuario no válido');
@@ -54,7 +54,7 @@ export class CredencialesService {
       return { valido: false, mensaje: 'CÓDIGO NO VÁLIDO' };
     }
 
-    // 🕒 Comparación usando hora local ajustada
+    // Comparación usando hora local ajustada
     const ahoraMs = this.getMexicoDate().getTime(); 
     const vencimientoMs = new Date(credencial.vencimiento).getTime();
 
@@ -66,19 +66,19 @@ export class CredencialesService {
       return { valido: false, mensaje: 'EL CÓDIGO HA EXPIRADO', alumno: credencial.alumnos };
     }
 
-    // --- SANCIONES ---
+    //  SANCIONES 
     const tieneBloqueo = credencial.alumnos?.sanciones.some(s => s.bloquea_acceso);
     if (tieneBloqueo) {
       await this.registrarEvento(credencial.usuario_id, puntoId, verificadorId, false, 'ALUMNO SANCIONADO', credencial.id);
       return { valido: false, mensaje: 'ACCESO BLOQUEADO', alumno: credencial.alumnos };
     }
 
-    // --- ✅ EXITO ---
+    //  EXITO 
     await this.registrarEvento(credencial.usuario_id, puntoId, verificadorId, true, null, credencial.id);
     return { valido: true, mensaje: 'ACCESO PERMITIDO', alumno: credencial.alumnos };
   }
 
-  // --- 🛠️ MÉTODOS CRUD ---
+  // MÉTODOS CRUD 
 
   async findByHash(qr_hash: string) {
     return this.prisma.credenciales.findUnique({
@@ -125,7 +125,7 @@ export class CredencialesService {
           punto_id: puntoId,
           usuario_id: usuarioId, 
           credencial_id: credencialId,
-          // 🕒 Usamos la función de ajuste aquí también
+          // Usamos la función de ajuste aquí también
           fecha_hora: this.getMexicoDate() 
         }
       });
@@ -134,7 +134,7 @@ export class CredencialesService {
     }
   }
 
-  // 🧹 LIMPIEZA DIARIA
+  // LIMPIEZA DIARIA
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async limpiarQRsExpirados() {
     console.log("🧹 Iniciando limpieza diaria...");
@@ -142,6 +142,6 @@ export class CredencialesService {
     const resultado = await this.prisma.credenciales.deleteMany({ 
         where: { vencimiento: { lt: ahoraMexico } } 
     });
-    console.log(`✅ Se eliminaron ${resultado.count} QR expirados.`);
+    console.log(` Se eliminaron ${resultado.count} QR expirados.`);
   }
 }

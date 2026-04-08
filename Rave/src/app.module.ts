@@ -4,7 +4,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ConfigModule } from '@nestjs/config'; 
 import { join } from 'path';
 
-// Importaciones de tus módulos UTVT
+// Importaciones de módulos UTVT
 import { CarrerasModule } from './UTVT/carreras/carreras.module';
 import { GruposModule } from './UTVT/grupos/grupos.module';
 import { DepartamentoModule } from './UTVT/departamentos/departamentos.module';
@@ -24,16 +24,15 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(), // 👈 Activa el reloj de tareas
-    // ... tus otros módulo
-  
+    ScheduleModule.forRoot(), //  Activa el reloj de tareas
+    
 
-    //ConfigModule debe ir aquí, al mismo nivel que los demás
+  
     ConfigModule.forRoot({
       isGlobal: true, 
     }),
 
-    // GraphQLModule ahora tiene solo su configuración
+    
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),

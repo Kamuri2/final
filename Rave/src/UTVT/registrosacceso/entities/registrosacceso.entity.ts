@@ -23,7 +23,7 @@ export class RegistroAcceso {
   @Field(() => Int)
   usuario_id: number;
 
-  // 🛡️ ESTOS SON LOS QUE FALTABAN:
+  
   @Field(() => PuntoAcceso, { nullable: true })
   puntos_acceso: PuntoAcceso;
 

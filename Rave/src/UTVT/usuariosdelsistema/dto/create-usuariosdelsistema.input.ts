@@ -33,13 +33,13 @@ export class CreateUsuarioSistemaInput {
   @IsString()
   carrera?: string;
 
-  // 🎓 AGREGADO: Semestre (Vital para la ficha académica)
+  // AGREGADO: Semestre (Vital para la ficha académica)
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()
   semestre?: number;
 
-  // 🏫 AGREGADO: Grupo ID (Para que NestJS lo autorice desde el inicio)
+  //  AGREGADO: Grupo ID (Para que NestJS lo autorice desde el inicio)
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()
@@ -51,7 +51,7 @@ export class CreateUsuarioSistemaInput {
   registro_completo?: boolean; 
   
   @Field()
-  @IsNotEmpty({ message: 'El correo es obligatorio' }) // 👈 Agregado
-  @IsString()                                         // 👈 Agregado
+  @IsNotEmpty({ message: 'El correo es obligatorio' }) 
+  @IsString()                                         
   email: string;
 }
