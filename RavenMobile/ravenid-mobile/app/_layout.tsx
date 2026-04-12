@@ -4,7 +4,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 
 // Configuración de Apollo Client
 const client = new ApolloClient({
-  uri: 'http://192.168.100.6:3000/graphql', // IP DEL SERVIDOR
+  uri: 'https://api-fraktalid.utvt.cloud/graphql', // IP DEL SERVIDOR
   cache: new InMemoryCache(),
 });
 

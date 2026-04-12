@@ -1,10 +1,17 @@
 import { gql, useMutation } from '@apollo/client';
 import { router } from 'expo-router';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View,
-  Dimensions, KeyboardAvoidingView, Platform, TouchableWithoutFeedback,
-  Keyboard, Animated, StatusBar, Image
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView, Platform,
+  StatusBar,
+  StyleSheet, Text, TextInput, TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 

@@ -5,7 +5,7 @@ import { Stack } from 'expo-router';
 // CAMBIAR ESTA IP por la DEL SERVIDOR)
 // Asegúrar de que el puerto COINCIDA
 const client = new ApolloClient({
-  link: new HttpLink({ uri: 'http://192.168.100.7:8081/graphql' }),
+  link: new HttpLink({ uri: 'https://api-fraktalid.utvt.cloud/graphql' }),
   cache: new InMemoryCache(),
 });
 
