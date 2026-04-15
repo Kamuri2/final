@@ -7,20 +7,18 @@
     "icon": "./assets/images/icon.png",
     "scheme": "ravenidmobile",
     "userInterfaceStyle": "automatic",
-
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#000000",
-        "foregroundImage": "./assets/images/icon_splash.png",
-        "backgroundImage": "./assets/images/icon_splash.png",
-        "monochromeImage": "./assets/images/icon_splash.png"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundImage": "./assets/images/icon.png",
+        "monochromeImage": "./assets/images/icon.png"
       },
-
       "predictiveBackGestureEnabled": false,
-      "package": "com.remsix.Qrifyapp"
+      "package": "com.kaoriko.Qrifyapp"
     },
     "web": {
       "output": "static",
@@ -31,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/icon_splash.png",
+          "image": "./assets/images/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -48,9 +46,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "7222232d-1cd0-4e0f-a8e0-edcb8c8755ea"
+        "projectId": "1c385b3d-e84f-4ba7-aeee-2585155a9f10"
       }
     },
-    "owner": "remsix"
+    "owner": "kaoriko"
   }
 }

@@ -19,10 +19,13 @@ export default function RootLayout() {
             animation: 'slide_from_right',
             animationDuration: 350, // Velocidad balanceada
             contentStyle: { backgroundColor: 'transparent' },
+
           }}
         >
           <Stack.Screen name="index" />
+          <Stack.Screen name="Login" />
           <Stack.Screen name="register" />
+          <Stack.Screen name="Unlock" />
           <Stack.Screen name="Home" />
           <Stack.Screen name="Formulario" />
         </Stack>

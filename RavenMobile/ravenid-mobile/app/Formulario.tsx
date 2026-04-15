@@ -1,9 +1,17 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity,
-    View, Dimensions, Platform, Animated, KeyboardAvoidingView, StatusBar, Modal, FlatList
+    ActivityIndicator,
+    Animated,
+    Dimensions,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    StatusBar,
+    StyleSheet, Text, TextInput, TouchableOpacity,
+    View
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
@@ -67,7 +75,7 @@ export default function Formulario() {
             });
             showStatus("REGISTRO EXITOSO ✓", "success");
             setTimeout(() => { if (isMounted.current) router.replace({ pathname: '/Home', params: { id: userId } }); }, 1500);
-        } catch (e) { showStatus("ERROR DE SERVIDOR", "error"); }
+        } catch (e) { showStatus("ERROR DE SERVIDOR, o DATOS DUPLICADOS", "error"); }
     };
 
     const renderSelectItem = ({ item }: any) => (

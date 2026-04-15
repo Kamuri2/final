@@ -1,15 +1,25 @@
 import { gql, useMutation } from '@apollo/client';
-import { router } from 'expo-router';
-import React, { useState, useEffect, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+// 💥 Importamos useFocusEffect
+import { router, useFocusEffect } from 'expo-router';
+// 💥 Importamos useCallback
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View,
-    Dimensions, Animated, KeyboardAvoidingView, Platform,
-    TouchableWithoutFeedback, Keyboard, StatusBar, ScrollView, Image
+    ActivityIndicator,
+    Animated,
+    Dimensions,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView, Platform,
+    ScrollView,
+    StatusBar,
+    Text, TextInput, TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
-const { width, height } = Dimensions.get('window');
-const normalize = (size: number) => Math.round((width / 375) * size);
+const { height } = Dimensions.get('window');
 
 const REGISTRAR = gql`
   mutation Registrar($input: CreateUsuarioSistemaInput!) { 
@@ -17,18 +27,81 @@ const REGISTRAR = gql`
   }
 `;
 
+// --- DICCIONARIO DE IDIOMAS ---
+const i18n = {
+    es: {
+        titulo: "REGISTRAR CUENTA",
+        subtitulo: "NUEVO USUARIO",
+        usuario: "NOMBRE DE USUARIO",
+        correo: "CORREO ELECTRÓNICO",
+        pass: "CONTRASEÑA",
+        confirmar: "CONFIRMAR CONTRASEÑA",
+        placeholderUser: "ejemploUser",
+        placeholderCorreo: "ejemplo@gmail.com",
+        placeholderPass: "••••••••",
+        continuarBtn: "CONTINUAR",
+        cancelarBtn: "CANCELAR",
+        errCampos: "LLENA TODOS LOS CAMPOS",
+        errCorreo: "CORREO INVÁLIDO",
+        errClaves: "LAS CLAVES NO COINCIDEN",
+        exito: "CUENTA CREADA",
+        errDuplicado: "CORREO YA VINCULADO A OTRO USUARIO",
+        errServidor: "FALLO EN EL SERVIDOR O DATOS INVÁLIDOS"
+    },
+    en: {
+        titulo: "REGISTER ACCOUNT",
+        subtitulo: "NEW USER",
+        usuario: "USERNAME",
+        correo: "EMAIL ADDRESS",
+        pass: "PASSWORD",
+        confirmar: "CONFIRM PASSWORD",
+        placeholderUser: "exampleUser",
+        placeholderCorreo: "example@gmail.com",
+        placeholderPass: "••••••••",
+        continuarBtn: "CONTINUE",
+        cancelarBtn: "CANCEL",
+        errCampos: "FILL ALL FIELDS",
+        errCorreo: "INVALID EMAIL",
+        errClaves: "PASSWORDS DO NOT MATCH",
+        exito: "ACCOUNT CREATED",
+        errDuplicado: "EMAIL ALREADY LINKED TO ANOTHER USER",
+        errServidor: "SERVER ERROR OR INVALID DATA"
+    }
+};
+
 export default function RegisterScreen() {
-    const { theme, isDarkMode } = useTheme();
+    const { isDarkMode } = useTheme();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' } | null>(null);
 
+    // ESTADO PARA IDIOMA
+    const [lang, setLang] = useState<'es' | 'en'>('es');
+    const t = i18n[lang];
+
     const isMounted = useRef(true);
     const fadeEntrance = useRef(new Animated.Value(0)).current;
     const slideEntrance = useRef(new Animated.Value(30)).current;
     const sheetAnim = useRef(new Animated.Value(height)).current;
+
+    // 💥 HOOK PARA EL IDIOMA: Lee la memoria al entrar a la pantalla
+    useFocusEffect(
+        useCallback(() => {
+            const loadLanguage = async () => {
+                try {
+                    const savedLang = await AsyncStorage.getItem('app_language');
+                    if (savedLang === 'en' || savedLang === 'es') {
+                        setLang(savedLang);
+                    }
+                } catch (e) {
+                    console.log("Error cargando idioma en Register:", e);
+                }
+            };
+            loadLanguage();
+        }, [])
+    );
 
     useEffect(() => {
         isMounted.current = true;
@@ -52,30 +125,27 @@ export default function RegisterScreen() {
                         if (isMounted.current) setStatusMessage(null);
                     });
                 }
-            }, 3500); // 3.5 segundos para que alcancen a leer bien el error 
+            }, 3500);
         }
     };
 
     const ejecutarRegistro = async () => {
-        if (!username.trim() || !email.trim() || password.length < 4) return showStatus('LLENA TODOS LOS CAMPOS', 'error');
-        if (!email.includes('@')) return showStatus('CORREO INVÁLIDO', 'error');
-        if (password !== confirm) return showStatus('LAS CLAVES NO COINCIDEN', 'error');
+        if (!username.trim() || !email.trim() || password.length < 4) return showStatus(t.errCampos, 'error');
+        if (!email.includes('@')) return showStatus(t.errCorreo, 'error');
+        if (password !== confirm) return showStatus(t.errClaves, 'error');
 
         try {
             const { data } = await registrar({ variables: { input: { username: username.trim(), email: email.trim().toLowerCase(), password, rol_id: 2 } } });
             if (data?.registrarAlumno?.id && isMounted.current) {
-                showStatus('CUENTA CREADA', 'success');
+                showStatus(t.exito, 'success');
                 setTimeout(() => { if (isMounted.current) router.replace('/'); }, 1500);
             }
         } catch (e: any) {
-            // AQUÍ DECIMOS EL ERROR DE CORREO DUPLICADO
             const errorMsg = String(e).toLowerCase();
-
-            // Verificamos si el backend arrojó un error de llave duplicada, email o correo
             if (errorMsg.includes('unique') || errorMsg.includes('duplicate') || errorMsg.includes('correo') || errorMsg.includes('email')) {
-                showStatus('CORREO YA VINCULADO A OTRO USUARIO', 'error');
+                showStatus(t.errDuplicado, 'error');
             } else {
-                showStatus('FALLO EN EL SERVIDOR O DATOS INVÁLIDOS', 'error');
+                showStatus(t.errServidor, 'error');
             }
         }
     };
@@ -85,189 +155,136 @@ export default function RegisterScreen() {
         else router.replace('/' as any);
     };
 
+    // --- COLORES DINÁMICOS SAGE / TAUPE ---
+    const bgColor = isDarkMode ? '#3D3B36' : '#F2F1EB';
+    const headerColor = isDarkMode ? '#262422' : '#8C977A';
+
     return (
-        <View style={[styles.mainContainer, { backgroundColor: theme.bg }]}>
-            <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+        <View style={{ flex: 1, backgroundColor: bgColor }}>
+            <StatusBar barStyle="light-content" />
 
-            <View style={styles.diagonalWrapper} pointerEvents="none">
-                <View style={[styles.diagonalShape, { backgroundColor: isDarkMode ? '#1A1A1A' : '#B08D6D' }]} />
-                <View style={styles.headerTextContainer}>
-
-                    <Image
-                        source={isDarkMode ? require('../assets/images/ICONO-WHRITE.png') : require('../assets/images/ICONO.png')}
-                        style={styles.logoImage}
-                        resizeMode="contain"
-                    />
-
-                    <Text style={[styles.headerTitle, { color: isDarkMode ? '#B08D6D' : '#FFF' }]}>REGISTRAR CUENTA</Text>
-                    <Text style={[styles.headerSubtitle, { color: isDarkMode ? '#FFF' : '#F2E7D5' }]}></Text>
-                </View>
+            {/* HEADER ESTILO LOGIN */}
+            <View className="h-[35%] items-center justify-center pt-8" style={{ backgroundColor: headerColor }}>
+                <Image
+                    source={isDarkMode ? require('../assets/images/ICONO-WHRITE.png') : require('../assets/images/ICONO.png')}
+                    className="w-64 h-64 -mb-8"
+                    resizeMode="contain"
+                />
+                <Text className={`text-2xl font-black tracking-[6px] uppercase ${isDarkMode ? 'text-[#9DB08B]' : 'text-white'}`}>
+                    {t.titulo}
+                </Text>
             </View>
 
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-                        <Animated.View style={{ flex: 1, opacity: fadeEntrance, transform: [{ translateY: slideEntrance }] }}>
-                            <View style={styles.topSpacer} />
+                    {/* CUERPO SUPERPUESTO */}
+                    <Animated.View
+                        className="flex-1 -mt-8 rounded-t-[45px] shadow-2xl overflow-hidden"
+                        style={{
+                            opacity: fadeEntrance,
+                            transform: [{ translateY: slideEntrance }],
+                            backgroundColor: bgColor
+                        }}
+                    >
+                        <ScrollView contentContainerStyle={{ paddingHorizontal: 40, paddingTop: 40, paddingBottom: 60 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
-                            <Text style={[styles.sectionLabel, { color: theme.subtext }]}>REGISTRAR NUEVO USUARIO</Text>
+                            <Text className={`text-xs font-black tracking-widest text-center mb-8 ${isDarkMode ? 'text-[#8C8A85]' : 'text-[#8C977A]'}`}>
+                                {t.subtitulo}
+                            </Text>
 
-                            <View style={styles.inputGroup}>
-                                <Text style={[styles.inputTitle, { color: theme.subtext }]}>NOMBRE DE USUARIO</Text>
+                            {/* INPUT USERNAME */}
+                            <View className="mb-6">
+                                <Text className={`font-bold text-xs mb-3 ml-1 tracking-widest ${isDarkMode ? 'text-[#8C8A85]' : 'text-zinc-500'}`}>{t.usuario}</Text>
                                 <TextInput
-                                    style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: isDarkMode ? '#B08D6D33' : theme.border }]}
+                                    className={`p-5 rounded-2xl text-base border border-l-4 ${isDarkMode ? 'bg-[#35332F] border-[#4A4843] border-l-[#9DB08B] text-white' : 'bg-[#FAF9F5] border-[#EAE9E4] border-l-[#8C977A] text-black'}`}
                                     value={username}
                                     onChangeText={setUsername}
-                                    placeholder="ejemploUser"
-                                    placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.2)' : theme.subtext}
+                                    placeholder={t.placeholderUser}
+                                    placeholderTextColor={isDarkMode ? '#8C8A85' : '#A1A1AA'}
                                     autoCapitalize="none"
                                 />
                             </View>
 
-                            <View style={styles.inputGroup}>
-                                <Text style={[styles.inputTitle, { color: theme.subtext }]}>CORREO ELECTRÓNICO</Text>
+                            {/* INPUT EMAIL */}
+                            <View className="mb-6">
+                                <Text className={`font-bold text-xs mb-3 ml-1 tracking-widest ${isDarkMode ? 'text-[#8C8A85]' : 'text-zinc-500'}`}>{t.correo}</Text>
                                 <TextInput
-                                    style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: isDarkMode ? '#B08D6D33' : theme.border }]}
+                                    className={`p-5 rounded-2xl text-base border border-l-4 ${isDarkMode ? 'bg-[#35332F] border-[#4A4843] border-l-[#9DB08B] text-white' : 'bg-[#FAF9F5] border-[#EAE9E4] border-l-[#8C977A] text-black'}`}
                                     value={email}
                                     onChangeText={setEmail}
                                     keyboardType="email-address"
-                                    placeholder="ejemplo@gmail.com"
-                                    placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.2)' : theme.subtext}
+                                    placeholder={t.placeholderCorreo}
+                                    placeholderTextColor={isDarkMode ? '#8C8A85' : '#A1A1AA'}
                                     autoCapitalize="none"
                                 />
                             </View>
 
-                            <View style={styles.inputGroup}>
-                                <Text style={[styles.inputTitle, { color: theme.subtext }]}>CONTRASEÑA</Text>
+                            {/* INPUT PASSWORD */}
+                            <View className="mb-6">
+                                <Text className={`font-bold text-xs mb-3 ml-1 tracking-widest ${isDarkMode ? 'text-[#8C8A85]' : 'text-zinc-500'}`}>{t.pass}</Text>
                                 <TextInput
-                                    style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: isDarkMode ? '#B08D6D33' : theme.border }]}
+                                    className={`p-5 rounded-2xl text-base border border-l-4 ${isDarkMode ? 'bg-[#35332F] border-[#4A4843] border-l-[#9DB08B] text-white' : 'bg-[#FAF9F5] border-[#EAE9E4] border-l-[#8C977A] text-black'}`}
                                     secureTextEntry
                                     value={password}
                                     onChangeText={setPassword}
-                                    placeholder="••••••••"
-                                    placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.2)' : theme.subtext}
+                                    placeholder={t.placeholderPass}
+                                    placeholderTextColor={isDarkMode ? '#8C8A85' : '#A1A1AA'}
                                 />
                             </View>
 
-                            <View style={styles.inputGroup}>
-                                <Text style={[styles.inputTitle, { color: theme.subtext }]}>CONFIRMAR CONTRASEÑA</Text>
+                            {/* INPUT CONFIRM PASSWORD */}
+                            <View className="mb-8">
+                                <Text className={`font-bold text-xs mb-3 ml-1 tracking-widest ${isDarkMode ? 'text-[#8C8A85]' : 'text-zinc-500'}`}>{t.confirmar}</Text>
                                 <TextInput
-                                    style={[styles.inputBlock, { backgroundColor: theme.cardBg, color: theme.text, borderColor: isDarkMode ? '#B08D6D33' : theme.border }]}
+                                    className={`p-5 rounded-2xl text-base border border-l-4 ${isDarkMode ? 'bg-[#35332F] border-[#4A4843] border-l-[#9DB08B] text-white' : 'bg-[#FAF9F5] border-[#EAE9E4] border-l-[#8C977A] text-black'}`}
                                     secureTextEntry
                                     value={confirm}
                                     onChangeText={setConfirm}
-                                    placeholder="••••••••"
-                                    placeholderTextColor={isDarkMode ? 'rgba(255,255,255,0.2)' : theme.subtext}
+                                    placeholder={t.placeholderPass}
+                                    placeholderTextColor={isDarkMode ? '#8C8A85' : '#A1A1AA'}
                                 />
                             </View>
 
+                            {/* BOTÓN DE REGISTRO */}
                             <TouchableOpacity
-                                style={[styles.mainBtn, loading && { opacity: 0.7 }]}
+                                className={`py-5 rounded-2xl items-center shadow-lg active:opacity-90 mt-2 ${isDarkMode ? 'bg-[#9DB08B]' : 'bg-[#8C977A]'}`}
                                 onPress={ejecutarRegistro}
                                 disabled={loading}
-                                activeOpacity={0.8}
                             >
-                                {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.mainBtnText}>CONTINUAR</Text>}
+                                {loading ? (
+                                    <ActivityIndicator color={isDarkMode ? "#1C1A18" : "#FFF"} />
+                                ) : (
+                                    <Text className={`font-black text-sm tracking-[3px] uppercase ${isDarkMode ? 'text-[#1C1A18]' : 'text-white'}`}>
+                                        {t.continuarBtn}
+                                    </Text>
+                                )}
                             </TouchableOpacity>
 
-                            <TouchableOpacity onPress={goBackSafe} style={styles.cancelBtn}>
-                                <Text style={styles.cancelBtnText}>CANCELAR</Text>
+                            {/* BOTÓN CANCELAR */}
+                            <TouchableOpacity onPress={goBackSafe} className="mt-8 items-center">
+                                <Text className="text-[#FF4D4D] font-black text-xs tracking-[2px]">{t.cancelarBtn}</Text>
                             </TouchableOpacity>
 
-                        </Animated.View>
-                    </ScrollView>
+                        </ScrollView>
+                    </Animated.View>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
 
             {/* SHEET DE STATUS */}
             {statusMessage && (
-                <Animated.View style={[
-                    styles.premiumSheet,
-                    {
-                        transform: [{ translateY: sheetAnim }],
-                        backgroundColor: isDarkMode ? '#121212' : '#F2E7D5',
-                        borderTopColor: statusMessage.type === 'success' ? '#B08D6D' : '#FF4D4D'
+                <Animated.View
+                    style={{ transform: [{ translateY: sheetAnim }], zIndex: 100 }}
+                    className={`absolute bottom-0 w-full rounded-t-[40px] p-12 items-center border-t-4 shadow-2xl 
+                        ${isDarkMode ? 'bg-[#262422] border-[#4A4843]' : 'bg-[#FAF9F5] border-[#EAE9E4]'} 
+                        ${statusMessage.type === 'success' ? (isDarkMode ? 'border-t-[#9DB08B]' : 'border-t-[#8C977A]') : 'border-t-red-500'}`
                     }
-                ]}>
-                    <View style={[styles.handle, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]} />
-                    <Text style={[styles.sheetStatusText, { color: statusMessage.type === 'success' ? '#B08D6D' : '#FF4D4D' }]}>
+                >
+                    <View className={`w-12 h-1.5 rounded-full mb-6 ${isDarkMode ? 'bg-[#8C8A85]/30' : 'bg-zinc-200'}`} />
+                    <Text className={`font-black text-2xl tracking-widest text-center ${statusMessage.type === 'success' ? (isDarkMode ? 'text-[#9DB08B]' : 'text-[#8C977A]') : 'text-red-500'}`}>
                         {statusMessage.text}
                     </Text>
-                    <Text style={[styles.sheetSubText, { color: theme.subtext }]}></Text>
                 </Animated.View>
             )}
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    mainContainer: { flex: 1 },
-    scrollContent: { paddingHorizontal: width * 0.1, paddingBottom: 50 },
-
-    diagonalWrapper: { position: 'absolute', top: 0, width: width, height: height * 0.45, zIndex: 0 },
-    diagonalShape: {
-        position: 'absolute',
-        top: -height * 0.15,
-        left: -width * 0.2,
-        width: width * 1.5,
-        height: height * 0.5,
-        transform: [{ rotate: '-12deg' }],
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowRadius: 10
-    },
-
-    headerTextContainer: { position: 'absolute', top: height * 0.04, width: width, alignItems: 'center' },
-    logoImage: { width: normalize(420), height: normalize(190), marginBottom: normalize(-15) },
-    headerTitle: { fontSize: normalize(32), fontWeight: '900', textAlign: 'center', letterSpacing: 6, textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
-    headerSubtitle: { fontSize: normalize(8), fontWeight: '700', letterSpacing: 4, opacity: 0.8 },
-
-    topSpacer: { height: height * 0.38 },
-    sectionLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 3, textAlign: 'center', marginBottom: 25 },
-
-    inputGroup: { marginBottom: 20 },
-    inputTitle: { fontSize: 9, fontWeight: '800', marginBottom: 12, letterSpacing: 2 },
-    inputBlock: {
-        padding: normalize(15),
-        borderRadius: 12,
-        fontSize: 15,
-        borderWidth: 1,
-        borderLeftWidth: 4,
-        borderLeftColor: '#B08D6D'
-    },
-
-    mainBtn: {
-        backgroundColor: '#B08D6D',
-        padding: normalize(18),
-        borderRadius: 15,
-        alignItems: 'center',
-        marginTop: 15,
-        elevation: 8,
-        shadowColor: '#B08D6D',
-        shadowOpacity: 0.4,
-        shadowRadius: 10
-    },
-    mainBtnText: { color: '#000', fontWeight: '900', letterSpacing: 3, fontSize: 13 },
-
-    cancelBtn: { marginTop: 40, alignItems: 'center' },
-    cancelBtnText: { color: '#FF4D4D', fontWeight: '900', fontSize: 10, letterSpacing: 2 },
-
-    premiumSheet: {
-        position: 'absolute',
-        bottom: 0,
-        width: width,
-        borderTopLeftRadius: 40,
-        borderTopRightRadius: 40,
-        paddingTop: 15,
-        paddingBottom: Platform.OS === 'ios' ? 60 : 40,
-        minHeight: height * 0.18,
-        alignItems: 'center',
-        zIndex: 9999,
-        borderTopWidth: 3,
-        elevation: 25
-    },
-    handle: { width: 50, height: 5, borderRadius: 3, marginBottom: 25 },
-    sheetStatusText: { fontSize: normalize(14), fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
-    sheetSubText: { fontSize: 8, fontWeight: '700', marginTop: 8, letterSpacing: 2 }
-});
