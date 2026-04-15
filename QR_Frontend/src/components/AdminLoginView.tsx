@@ -30,7 +30,7 @@ const AdminLoginView = ({ onLoginSuccess, onBack }: AdminLoginProps) => {
         };
 
         try {
-            const response = await fetch('http://192.168.100.6:3000/graphql', {
+            const response = await fetch('https://api-fraktalid.utvt.cloud/graphql', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(GQL_LOGIN),

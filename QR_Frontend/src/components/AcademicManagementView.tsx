@@ -22,7 +22,7 @@ const AcademicManagementView = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editValue, setEditValue] = useState("");
 
-    const API_URL = 'http://192.168.100.6:3000/graphql';
+    const API_URL = 'https://api-fraktalid.utvt.cloud/graphql';
 
     // --- 1. LEER (READ): Cargar datos desde la DB ---
     const fetchData = async () => {
@@ -103,7 +103,7 @@ const AcademicManagementView = () => {
                     {/* Contenedor más grande, transparente y centrado */}
                     <div className="w-90 h-90">
                         <img
-                            src="./public/hu-tao-cool.gif"
+                            src="/hu-tao-cool.gif"
                             alt="rei-ayanami"
                             className="w-50 h-50 object-contain"
                         />
